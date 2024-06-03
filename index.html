@@ -1,0 +1,264 @@
+
+<!DOCTYPE html>
+
+<head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="container">
+        <div id="title">
+            <h1>Station Allocation</h1>
+            <div id="logoContainer">
+                <div class="outer">
+                    <div class="inner  first">&#9608;</div>
+                </div>
+                <div class="outer">
+                    <div class="inner second">&#9608;</div>
+                </div>
+                <div class="outer">
+                    <div class="inner third">&#9608;</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="searchSection">
+            <input type="text" id="filterInput" placeholder="Filter by Field 1" />
+            <input type="file" id="fileInput" />
+            <input type="button" id="saveButton" value="Save" />
+        </div>
+        <div id="main">
+            <table id="dataTable"></table>
+            <pre id="jsonOutput"></pre>
+            <pre id="singleResultUrl"></pre>
+        </div>
+        <div id="otherRoles"></div>
+    </div>
+    <div id="status"></div>
+    <script>
+        let originalData = []; //This is the place for the actual current list
+        let stations = [];
+        let sides = ['North', 'West', 'South'];
+        let floors = ['P2', 'P3', 'P4'];
+        let names = "http://jsonblob.com/1246532986249011200";
+        document.getElementById('fileInput').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const contents = e.target.result;
+                    parseFile(contents);
+                    applyInitialFilter();
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        //Get the station list from JSONblob
+        //http://jsonblob.com/1246528442869866496
+        async function putJsonState(url) {
+
+            try {
+                const response = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+
+                const data = await response.json();
+                return true;
+            } catch (error) {
+                console.error('There has been a problem with your fetch operation:', error);
+            }
+        }
+
+        async function fetchJsonObject(url) {
+
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('There has been a problem with your fetch operation:', error);
+            }
+        }
+
+        //State http://jsonblob.com/1246927838899986432
+
+        // Get Stations
+        fetchJsonObject('https://jsonblob.com/api/jsonBlob/1246528442869866496').then((data) => {
+            console.log(data);
+            stations = data.floor1.stations; createCountElement("stations", countStations);
+            //Get Staff
+            fetchJsonObject('https://jsonblob.com/api/jsonBlob/1246532986249011200').then((data) => {
+                staff = [];
+
+                while (data.names.length > 0) {
+                    staff.push(data.names.splice(getRandomNumber(data.names.length), 1)[0]);
+                }
+                createCountElement("Staff", countStaff);
+                originalData = transposeArray([staff, stations]);
+                originalData.map(addRowToTable);
+                originalData.map((r) => { console.log(r) });
+                document.getElementById("jsonOutput").innerText = objectToJson(originalData)
+
+            });
+        });
+
+        document.getElementById('filterInput').addEventListener('input', function () {
+            filterTable(this.value);
+        });
+        document.getElementById('dataTable').addEventListener('click', function () {
+            console.log('clicked');
+            const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = '';  // Clear any existing rows
+
+            originalData.sort();
+
+            originalData.forEach(fields => {
+                addRowToTable(fields);
+            });
+        });
+
+
+        function transposeArray(array) {
+            var newArray = [];
+            for (var i = 0; i < array[0].length; i++) {
+                newArray.push([]);
+            };
+
+            for (var i = 0; i < array.length; i++) {
+                for (var j = 0; j < array[0].length; j++) {
+                    newArray[j].push(array[i][j]);
+                };
+            };
+
+            return newArray;
+        }
+
+        function parseFile(contents) {
+            const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = '';  // Clear any existing rows
+
+            const lines = contents.split('\n');
+            originalData = lines.map(line => line.split(',').map(field => field.trim()));
+
+            originalData.forEach(fields => {
+                addRowToTable(fields);
+            });
+        }
+
+        function addRowToTable(fields) {
+            const table = document.getElementById('dataTable')
+            if (!table.getElementsByTagName('tbody')[0]) {
+                tableBody = table.appendChild(document.createElement('tbody'));
+                const row = document.createElement('tr');
+                span = document.createElement('th');
+                span.setAttribute('rowspan', 11)
+                span.setAttribute('id', 'span1');
+                span.innerText = 'Floor 1';
+                row.appendChild(span);
+                th1 = document.createElement('th');
+                th1.innerText = 'amazonid';
+                th1.setAttribute('id', 'amazonid');
+                row.appendChild(th1);
+                th2 = document.createElement('th');
+                th2.innerText = 'Station';
+                th2.setAttribute('id', 'station')
+                row.appendChild(th2);
+                row.appendChild(th2);
+                tableBody.appendChild(row);
+            }
+            else {
+                tableBody = table.getElementsByTagName('tbody')[0]
+            }
+            const row = document.createElement('tr');
+
+            for (let i = 0; i < 3; i++) {
+                const cell = document.createElement('td');
+                cell.textContent = fields[i] ? fields[i] : '';  // Handle missing fields
+                row.appendChild(cell);
+            }
+            tableBody.appendChild(row);
+        }
+
+        function objectToJson(obj) {
+            try {
+                return JSON.stringify(obj);
+            } catch (error) {
+                console.error('Error converting object to JSON:', error);
+                return null;
+            }
+        }
+
+        function getRandomNumber(n) {
+            if (n <= 0) {
+                throw new Error("n must be a positive integer");
+            }
+            return Math.floor(Math.random() * n);
+        }
+
+        function filterTable(query) {
+            console.log(query);
+            const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = '';  // Clear current table
+
+            const filteredData = originalData.filter(fields => fields[0] && fields[0].startsWith(query));
+            console.log(filteredData);
+            filteredData.forEach(fields => {
+                console.log('adding filtered fields')
+                addRowToTable(fields);
+            });
+
+            if (filteredData.length === 1) {
+                const url = `${window.location.origin}${window.location.pathname}?Field1=${filteredData[0][0]}`;
+                document.getElementById('singleResultUrl').textContent = url;
+                document.getElementById('singleResultUrl').style.display = 'block';
+            } else {
+                document.getElementById('singleResultUrl').style.display = 'none';
+            }
+        }
+
+        function applyInitialFilter() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const initialFilter = urlParams.get('Field1');
+            if (initialFilter) {
+                document.getElementById('filterInput').value = initialFilter;
+                filterTable(initialFilter);
+            }
+        }
+
+        function countStations() {
+            return stations.length;
+        }
+
+        function countStaff() {
+            return staff.length;
+        }
+
+        function createCountElement(name, count) {
+            c = document.createElement("div");
+            c.setAttribute("id", name)
+            c.innerHTML = name + "Count: " + count();
+            document.getElementById("status").appendChild(c)
+        }
+
+        // Apply initial filter on page load
+        window.onload = applyInitialFilter;
+    </script>
+</body>
