@@ -28,16 +28,24 @@
     height: 30px;
     background-color: black;
     width: 100vw;
-    color:brown;
+    color: brown;
     border-bottom: 2px solid brown;
     box-sizing: border-box;
     display: flex;
     flex-direction: row;
-    align-items: center;
+    flex-wrap: wrap;
+    justify-content: left;
+    padding: 3px;
+    gap: 4px;
 
 }
 
-#dataTable {
+#searchSection #admin {
+    justify-self: right;
+    border: 1px solid brown;
+}
+
+#dataTableF1 {
     margin: 14px;
     margin-top: 10vh;
     box-sizing: border-box;
@@ -63,7 +71,7 @@
         width: 1rem;
     }
 }
-#dataTable tr:nth-child(even){
+#dataTableF1 tr:nth-child(even){
     background-color: rgb(78, 13, 17);
     color: white;
 }
@@ -87,17 +95,21 @@
 #title {
     display: flex;
     width: 100vw;
-    /* flex-direction: column; */
-    height: 10vh;
+    height: 80px;
     align-content: space-between;
     flex-wrap: wrap;
     justify-content: space-between;
-    padding-top: 2vh;
+    padding: 4px;
+    padding-top: 10px;
     
+}
+
+#title h1 {
+    align-self: baseline;
 }
 #title #logoContainer {
     flex-direction: row;
-    align-self: flex-end;
+    align-self: flex-start;
     padding-right: 20px;
 }
 
@@ -109,11 +121,13 @@
     height: 20px;
   }
   .outer {
+    display: block;
     box-sizing: border-box;
     border: 4px solid #000;
     padding: 25px;
     overflow: hidden;
     width: 110px;
+    aspect-ratio: 1/1;
   }
   .inner {
     font-size: 60px;
@@ -145,5 +159,12 @@
     100%{
       opacity: 0%;
     }
+  }
+
+  #singleResultUrl {
+    border: 2px solid green;
+    padding: 24px;
+    margin: 4px;
+    margin-top: 30px;
   }
   

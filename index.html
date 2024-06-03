@@ -1,7 +1,7 @@
-
 <!DOCTYPE html>
 
-<head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+<head>
+    <script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -23,12 +23,14 @@
         </div>
 
         <div id="searchSection">
-            <input type="text" id="filterInput" placeholder="Filter by Field 1" />
-            <input type="file" id="fileInput" />
-            <input type="button" id="saveButton" value="Save" />
+            <input type="text" id="filterInput" placeholder="Filter by Amazonid" />
+            <div id="admin">
+                <input type="file" id="fileInput" />
+                <input type="button" id="saveButton" value="Save" />
+            </div>
         </div>
         <div id="main">
-            <table id="dataTable"></table>
+            <table id="dataTableF1"></table>
             <pre id="jsonOutput"></pre>
             <pre id="singleResultUrl"></pre>
         </div>
@@ -77,6 +79,14 @@
             }
         }
 
+        const copyContent = async (s) => {
+            try {
+                await navigator.clipboard.writeText(s);
+            } catch (err) {
+                console.error("Failed to copy: ", err);
+            }
+        };
+
         async function fetchJsonObject(url) {
 
             try {
@@ -123,9 +133,9 @@
         document.getElementById('filterInput').addEventListener('input', function () {
             filterTable(this.value);
         });
-        document.getElementById('dataTable').addEventListener('click', function () {
+        document.getElementById('dataTableF1').addEventListener('click', function () {
             console.log('clicked');
-            const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
+            const tableBody = document.getElementById('dataTableF1').getElementsByTagName('tbody')[0];
             tableBody.innerHTML = '';  // Clear any existing rows
 
             originalData.sort();
@@ -134,6 +144,12 @@
                 addRowToTable(fields);
             });
         });
+
+        document.getElementById('singleResultUrl').addEventListener('click', function () {
+            copyContent(document.getElementById('singleResultUrl').innerText)
+        });
+
+
 
 
         function transposeArray(array) {
@@ -152,7 +168,7 @@
         }
 
         function parseFile(contents) {
-            const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
+            const tableBody = document.getElementById('dataTableF1').getElementsByTagName('tbody')[0];
             tableBody.innerHTML = '';  // Clear any existing rows
 
             const lines = contents.split('\n');
@@ -164,7 +180,7 @@
         }
 
         function addRowToTable(fields) {
-            const table = document.getElementById('dataTable')
+            const table = document.getElementById('dataTableF1')
             if (!table.getElementsByTagName('tbody')[0]) {
                 tableBody = table.appendChild(document.createElement('tbody'));
                 const row = document.createElement('tr');
@@ -215,7 +231,7 @@
 
         function filterTable(query) {
             console.log(query);
-            const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
+            const tableBody = document.getElementById('dataTableF1').getElementsByTagName('tbody')[0];
             tableBody.innerHTML = '';  // Clear current table
 
             const filteredData = originalData.filter(fields => fields[0] && fields[0].startsWith(query));
@@ -226,7 +242,7 @@
             });
 
             if (filteredData.length === 1) {
-                const url = `${window.location.origin}${window.location.pathname}?Field1=${filteredData[0][0]}`;
+                const url = `${window.location.origin}${window.location.pathname}?Amazonid=${filteredData[0][0]}`;
                 document.getElementById('singleResultUrl').textContent = url;
                 document.getElementById('singleResultUrl').style.display = 'block';
             } else {
