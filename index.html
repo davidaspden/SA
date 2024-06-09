@@ -29,16 +29,23 @@
                 <input type="button" id="saveButton" value="Save" />
             </div>
         </div>
+        <div id="dataSection">
         <div id="main">
             <table id="dataTableF1"></table>
             <pre id="jsonOutput"></pre>
             <pre id="singleResultUrl"></pre>
         </div>
-        <div id="otherRoles"></div>
+        <div id="otherRoles">
+            <table id="labourShare"></table>
+            <table id="unassigned"></table>
+            <table id="standDown"></table>
+        </div>
+    </div>
     </div>
     <div id="status"></div>
     <script>
         let originalData = []; //This is the place for the actual current list
+        let unassigned =[];
         let stations = [];
         let sides = ['North', 'West', 'South'];
         let floors = ['P2', 'P3', 'P4'];
@@ -57,23 +64,20 @@
         });
 
         //Get the station list from JSONblob
-        //http://jsonblob.com/1246528442869866496
-        async function putJsonState(url) {
-
+        async function putJsonState(url,data) {
             try {
                 const response = await fetch(url, {
                     method: 'PUT',
                     headers: {
-                        'Accept': 'application/json'
-                    }
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
                 });
 
                 if (!response.ok) {
                     throw new Error('Network response was not ok ' + response.statusText);
                 }
 
-                const data = await response.json();
-                return true;
             } catch (error) {
                 console.error('There has been a problem with your fetch operation:', error);
             }
@@ -88,7 +92,6 @@
         };
 
         async function fetchJsonObject(url) {
-
             try {
                 const response = await fetch(url, {
                     method: 'GET',
@@ -133,22 +136,29 @@
         document.getElementById('filterInput').addEventListener('input', function () {
             filterTable(this.value);
         });
-        document.getElementById('dataTableF1').addEventListener('click', function () {
-            console.log('clicked');
-            const tableBody = document.getElementById('dataTableF1').getElementsByTagName('tbody')[0];
-            tableBody.innerHTML = '';  // Clear any existing rows
+        document.getElementById('dataTableF1').addEventListener('click', function (event) {
+            if (event.target.tagName.toLowerCase() == 'th' && event.target.innerHTML == "amazonid") {
+                const tableBody = document.getElementById('dataTableF1').getElementsByTagName('tbody')[0];
+                tableBody.innerHTML = '';  // Clear any existing rows
 
-            originalData.sort();
+                originalData.sort();
 
-            originalData.forEach(fields => {
-                addRowToTable(fields);
-            });
+                originalData.forEach(fields => {
+                    addRowToTable(fields);
+                });
+            }
         });
 
         document.getElementById('singleResultUrl').addEventListener('click', function () {
             copyContent(document.getElementById('singleResultUrl').innerText)
         });
-
+        document.getElementById('saveButton').addEventListener('click', ()=>{
+            putJsonState('https://jsonblob.com/api/jsonBlob/1249339120978616320','test2')
+            c = document.createElement("div");
+            c.setAttribute("id", 'Last Saved')
+            c.innerHTML = "Last Saved: "+Date.now().toDateString();
+            document.getElementById("status").appendChild(c)
+        })
 
 
 
@@ -208,6 +218,7 @@
             for (let i = 0; i < 3; i++) {
                 const cell = document.createElement('td');
                 cell.textContent = fields[i] ? fields[i] : '';  // Handle missing fields
+                cell.setAttribute('class', 'editable')
                 row.appendChild(cell);
             }
             tableBody.appendChild(row);
@@ -259,6 +270,41 @@
             }
         }
 
+        document.addEventListener('DOMContentLoaded', () => {
+            const table = document.querySelector('#dataTableF1');
+
+            table.addEventListener('click', (event) => {
+                const cell = event.target;
+
+                if (cell.classList.contains('editable') && !cell.querySelector('input')) {
+                    const originalText = cell.innerText;
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.value = originalText;
+                    input.style.width = `${cell.offsetWidth}px`;
+
+                    cell.innerHTML = '';
+                    cell.appendChild(input);
+                    input.focus();
+
+                    input.addEventListener('keydown', (event) => {
+                        if (event.key === 'Escape') {
+                            cell.innerHTML = originalText;
+                        } else if (event.key === 'Enter') {
+                            if (input.value == ''){
+                                //addToUnassigned
+                                document.querySelector('#unassigned').appendChild(cell.parentNode)
+                            }
+                            cell.innerHTML = input.value;
+                        }
+                    });
+                    input.addEventListener('blur', () => {
+                cell.innerHTML = originalText;
+            });
+                }
+            });
+        });
+
         function countStations() {
             return stations.length;
         }
@@ -273,7 +319,6 @@
             c.innerHTML = name + "Count: " + count();
             document.getElementById("status").appendChild(c)
         }
-
         // Apply initial filter on page load
         window.onload = applyInitialFilter;
     </script>
