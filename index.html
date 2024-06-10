@@ -3,6 +3,7 @@
 <head>
     <script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.cdnfonts.com/css/amazon-ember" rel="stylesheet">
 </head>
 
 <body>
@@ -31,7 +32,10 @@
         </div>
         <div id="dataSection">
             <div id="main">
-                <div id="dataTableF1Container"><table id="dataTableF1"></table></div>
+                <div id="dataTableF1Container">
+                    <table id="dataTableF1"></table>
+                </div>
+                <div id="freeStationInfo"></div>
                 <pre id="jsonOutput"></pre>
                 <pre id="singleResultUrl"></pre>
             </div>
@@ -122,6 +126,7 @@
 
         //State http://jsonblob.com/1246927838899986432
 
+        //Populate the Data
         // Get Stations
         fetchJsonObject('https://jsonblob.com/api/jsonBlob/1246528442869866496').then((data) => {
             stations = data.floor1.stations; createCountElement("stations", countStations);
@@ -130,10 +135,10 @@
                 staff = [];
                 document.getElementById("namesList").value = data.names.toString();
                 if (stations.length < data.names.length) {
-                    for(let i=0; i<data.names.length - stations.length; i++){
-                        addRowToUA([data.names.slice(stations.length, data.names.length)[i],'---']);
+                    for (let i = 0; i < data.names.length - stations.length; i++) {
+                        addRowToUA([data.names.slice(stations.length, data.names.length)[i], '---']);
                     }
-                    
+
                     data.names.splice(stations.length, data.names.length - stations.length);
 
                 }
@@ -147,14 +152,19 @@
             });
         });
 
+        //Listen for filters
         document.getElementById('filterInput').addEventListener('input', function () {
             filterTable(this.value);
         });
+
+        //Listen for clicks to sort the table.
         document.getElementById('dataTableF1').addEventListener('click', function (event) {
             if (event.target.tagName.toLowerCase() == 'th' && event.target.innerHTML == "amazonid") {
-                const tableBody = document.getElementById('dataTableF1').getElementsByTagName('tbody')[0];
-                tableBody.innerHTML = '';  // Clear any existing rows
-
+                const table = document.getElementById('dataTableF1');
+                const tableBody = table.getElementsByTagName('tbody')[0];
+                const th = table.rows[0];
+                tableBody.innerHTML = '';
+                tableBody.appendChild(th);
                 originalData.sort();
 
                 originalData.forEach(fields => {
@@ -166,6 +176,8 @@
         document.getElementById('singleResultUrl').addEventListener('click', function () {
             copyContent(document.getElementById('singleResultUrl').innerText)
         });
+
+        //Listen for the save button being pressed.
         document.getElementById('saveButton').addEventListener('click', () => {
             putJsonState('https://jsonblob.com/api/jsonBlob/1249339120978616320', 'test2')
             c = document.createElement("div");
@@ -175,7 +187,7 @@
         })
 
 
-
+        //Array transposing utility
         function transposeArray(array) {
             var newArray = [];
             for (var i = 0; i < array[0].length; i++) {
@@ -191,6 +203,7 @@
             return newArray;
         }
 
+        //Functionality to parse a saved file
         function parseFile(contents) {
             const tableBody = document.getElementById('dataTableF1').getElementsByTagName('tbody')[0];
             tableBody.innerHTML = '';  // Clear any existing rows
@@ -232,12 +245,19 @@
             for (let i = 0; i < fields.length; i++) {
                 const cell = document.createElement('td');
                 cell.textContent = fields[i] ? fields[i] : '';  // Handle missing fields
-                cell.setAttribute('class', 'editable')
+                if(i==0){
+                    cell.setAttribute('class', 'movable');
+                }
+                else{
+                cell.setAttribute('class', 'editable');
+                }
                 row.appendChild(cell);
             }
             tableBody.appendChild(row);
         }
 
+
+        //Utility to stringify JSON
         function objectToJson(obj) {
             try {
                 return JSON.stringify(obj);
@@ -246,7 +266,7 @@
                 return null;
             }
         }
-
+        //Utility to get a Random Number
         function getRandomNumber(n) {
             if (n <= 0) {
                 throw new Error("n must be a positive integer");
@@ -254,10 +274,13 @@
             return Math.floor(Math.random() * n);
         }
 
+        //Filtering Logic
         function filterTable(query) {
-            console.log(query);
-            const tableBody = document.getElementById('dataTableF1').getElementsByTagName('tbody')[0];
-            tableBody.innerHTML = '';  // Clear current table
+            const table = document.getElementById('dataTableF1');
+            const tableBody = table.getElementsByTagName('tbody')[0];
+            const th = table.rows[0];
+            tableBody.innerHTML = '';
+            tableBody.appendChild(th);  // Clear current table
 
             const filteredData = originalData.filter(fields => fields[0] && fields[0].startsWith(query));
             filteredData.forEach(fields => {
@@ -268,12 +291,13 @@
             if (filteredData.length === 1) {
                 const url = `${window.location.origin}${window.location.pathname}?Amazonid=${filteredData[0][0]}`;
                 document.getElementById('singleResultUrl').textContent = url;
-                document.getElementById('singleResultUrl').style.display = 'block';
+                document.getElementById('singleResultUrl').style.display = 'inline-block';
             } else {
                 document.getElementById('singleResultUrl').style.display = 'none';
             }
         }
 
+        //Apply filter in case of a URL
         function applyInitialFilter() {
             const urlParams = new URLSearchParams(window.location.search);
             const initialFilter = urlParams.get('Field1');
@@ -282,15 +306,33 @@
                 filterTable(initialFilter);
             }
         }
-
+        //Find what stations are empty
+        function findEmptyStations(assigned, all) {
+            emptyStations = [];
+            console.log(assigned, all);
+            all.map((station) => { if (!assigned.includes(station)) { emptyStations.push(station) } });
+            return emptyStations;
+        }
+        //Event Listener to initiate Table decoration
         document.addEventListener('DOMContentLoaded', () => {
             decorateTable(document.querySelector('#dataTableF1'))
         });
-
-        function decorateTable(table){
+        //Table Decoration logic - adding utility
+        function decorateTable(table) {
             table.addEventListener('click', (event) => {
                 const cell = event.target;
+                if (cell.classList.contains('movable') && !cell.querySelector('button')) {
+                    const originalText = cell.innerText;
+                    const input = document.createElement('input');
+                    input.type = 'button';
+                    input.value = originalText;
+                    input.style.width = `${cell.offsetWidth}px`;
 
+                    cell.innerHTML = '';
+                    cell.appendChild(input);
+
+                    input.addEventListener('click',(e)=>{assignToLabourShare(e.target.value); cell.parentNode.remove()})
+                }
                 if (cell.classList.contains('editable') && !cell.querySelector('input')) {
                     const originalText = cell.innerText;
                     const input = document.createElement('input');
@@ -308,8 +350,13 @@
                         } else if (event.key === 'Enter') {
                             if (input.value == '') {
                                 //addToUnassigned
-                                console.log(cell.parentNode);
                                 document.querySelector('#unassigned').appendChild(cell.parentNode)
+                                //Recalculate Free Stations.
+                                let inuse = [];
+                                for(let i=1; i<table.rows.length; i++){
+                                    inuse.push(+table.rows[i].cells[1].innerHTML);
+                                }
+                                document.querySelector('#freeStationInfo').innerHTML= 'There are these free stations '+ findEmptyStations(inuse,stations);
                             }
                             cell.innerHTML = input.value;
                         }
@@ -336,6 +383,7 @@
             document.getElementById("status").appendChild(c)
         }
 
+        //This needs more work, currently updates UI not state.
         function assignToLabourShare(userid) {
             labourShare.push([userid, Date().toString()]);
             //We now should fire an event saying labourShare has changed.
@@ -345,18 +393,16 @@
         document.querySelector('#labourShareTable').addEventListener('newLabourShare', (e) => {
             addRowToLS(e.detail.assignee);
         }, true)
-        // Apply initial filter on page load
 
+        //Add a row to the Labour Share
         function addRowToLS(fields) {
             console.log(fields);
             const table = document.getElementById('labourShareTable');
             if (!table.getElementsByTagName('tbody')[0]) {
                 addTableHeaders(table, ['amazonid', 'time']);
             }
-            tableBody = table.getElementsByTagName('tbody')[0]
-
+            const tableBody = table.getElementsByTagName('tbody')[0]
             const row = document.createElement('tr');
-
             for (let i = 0; i <= fields.length; i++) {
                 const cell = document.createElement('td');
                 cell.textContent = fields[i] ? fields[i] : '';  // Handle missing fields
@@ -365,15 +411,15 @@
             }
             tableBody.appendChild(row);
         }
+
+        //Add a row to the unassigned table
         function addRowToUA(fields) {
             const table = document.getElementById('unassigned')
             if (!table.getElementsByTagName('tbody')[0]) {
                 addTableHeaders(table, ['amazonid', 'new station']);
             }
             tableBody = table.getElementsByTagName('tbody')[0]
-            
             const row = document.createElement('tr');
-
             for (let i = 0; i <= fields[0].length; i++) {
                 const cell = document.createElement('td');
                 cell.textContent = fields[i] ? fields[i] : '';  // Handle missing fields
@@ -390,7 +436,6 @@
                 addTableHeaders(table, ['amazonid', 'time']);
             }
             tableBody = table.getElementsByTagName('tbody')[0]
-
             for (let i = 0; i < fields.length; i++) {
                 const cell = document.createElement('td');
                 cell.textContent = fields[i] ? fields[i] : '';  // Handle missing fields
@@ -399,7 +444,7 @@
             }
             tableBody.appendChild(row);
         }
-
+        //Refactored making table headers.
         function addTableHeaders(table, headers) {
             if (!table.getElementsByTagName('tbody')[0]) {
                 tableBody = table.appendChild(document.createElement('tbody'));

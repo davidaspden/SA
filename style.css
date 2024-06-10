@@ -1,7 +1,9 @@
+
+
 * {
     margin: 0px;
     padding: 0px;
-    font-family: sans-serif;
+    font-family: 'Amazon Ember Display', sans-serif;
 }
 
 #status {
@@ -11,7 +13,7 @@
     position: absolute;
     bottom: 0px;
     width: 100vw;
-    color:brown;
+    color:rgb(67, 5, 5);
     border-top: 4px solid rgb(0, 0, 0);
     box-sizing: border-box;
     display: flex;
@@ -46,13 +48,12 @@
 }
 
 #dataTableF1 {
+  border-radius: 6px;
+  box-shadow: rgba(6, 24, 44, 0.4) 0px 0px 0px 2px, rgba(6, 24, 44, 0.65) 0px 4px 6px -1px, rgba(255, 255, 255, 0.08) 0px 1px 0px inset;
     margin: 14px;
-    margin-top: 10vh;
     box-sizing: border-box;
-    border: 1px solid #000;
-    
+    border: 2px solid #000;
     border-collapse: collapse;
-    
     #span1 {
         writing-mode: tb-rl;
         transform: rotate(-180deg);
@@ -63,44 +64,51 @@
 }
 #dataTableF1Container{
   position:relative;
-  display: inline-block;
+  display: block;
   height: auto;
 }
 #dataTableF1Container:before {
   content: 'Station Data';
   display: inline-block;
-  position: relative;
+  position: absolute;
   border: 1px solid rgb(1, 1, 164);
   font-weight: bold;
   color: #fff;
   background-color: blue;
-  margin-bottom: 10px;
-  top: -15px;
-  width: 200px;
+  margin-bottom: 5px;
+  top: -5px;
+  left: 10px;
+  width: 150px;
+  z-index: 2;
 }
 
 #dataTableF1 tr th {
   height: 40px;
 }
 #dataTableF1 tr:nth-child(even){
-    background-color: rgb(78, 13, 17);
+    background-color: rgb(13, 32, 116);
     color: white;
 }
 #jsonOutput {
+  position: relative;
     border: 2px solid green;
-    padding: 24px;
+    padding: 12px;
     margin: 4px;
-    margin-top: 30px;
-    overflow: hidden;
+    margin-top: 20px;
+    font-size: 10px;
+    overflow:scroll;
     &:before {
         content: 'Raw Data';
-        position: relative;
+        position: absolute;
+        display: block;
         border: 1px solid red;
         font-weight: bold;
         color: #fff;
         background-color: red;;
-        top: -30px;
+        top: -15px;
         margin-bottom: 10px;
+        z-index: 2;
+        overflow:visible;
     }
     
 }
@@ -120,6 +128,8 @@
 
 #title h1 {
     align-self: baseline;
+    display: block;
+    border-bottom: 6px double blue;
 }
 #title #logoContainer {
     flex-direction: row;
@@ -177,14 +187,36 @@
 
   #singleResultUrl {
     border: 2px solid green;
-    padding: 24px;
+    padding: 12x;
+    position: relative;
     margin: 4px;
     margin-top: 30px;
+    font-family: "Amazon Ember";
+    font-weight: 200;
+    &:before {
+      content: 'Your personal station link';
+      font-family: "Amazon Ember Display";
+      position: absolute;
+      top: -15px;
+      background-color: blueviolet;
+      color: black;
+      font-weight: 400;
+    }
   }
 
   #main {
     width: 70%;
-    border-right: 1px solid brown;
+    box-sizing: border-box;
+    border-right: 3px solid brown;
+    margin-right: 4px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-content: flex-start;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    
   }
   #container {
     display: flex;
@@ -197,6 +229,7 @@
     width: 100vw;
     display: flex;
     flex-direction: row;
+    height: auto;
   }
 
   #otherRoles {
