@@ -150,11 +150,11 @@
                 originalData.map(addRowToTable);
                 const ev = new CustomEvent('originalDataChanged', { bubbles: false, detail: { when: Date().toString() } });
                 document.dispatchEvent(ev);
-                
+
             });
         });
 
-        document.addEventListener('originalDataChanged', (e)=>{
+        document.addEventListener('originalDataChanged', (e) => {
             document.getElementById("jsonOutput").innerText = objectToJson(originalData);
         });
 
@@ -251,11 +251,11 @@
             for (let i = 0; i < fields.length; i++) {
                 const cell = document.createElement('td');
                 cell.textContent = fields[i] ? fields[i] : '';  // Handle missing fields
-                if(i==0){
+                if (i == 0) {
                     cell.setAttribute('class', 'movable');
                 }
-                else{
-                cell.setAttribute('class', 'editable');
+                else {
+                    cell.setAttribute('class', 'editable');
                 }
                 row.appendChild(cell);
             }
@@ -320,14 +320,14 @@
             document.dispatchEvent(ev);
         }
 
-        document.addEventListener('originalDataChanged', (e)=>{
-            ne = originalData.filter((o)=>{return !freeStations.includes(o[1])});
+        document.addEventListener('originalDataChanged', (e) => {
+            ne = originalData.filter((o) => { return !freeStations.includes(o[1]) });
             originalData = ne;
         });
 
-        document.addEventListener('freestationsChanged', (e)=>{
+        document.addEventListener('freestationsChanged', (e) => {
             freeStations = e.detail.emptyStations;
-            document.querySelector('#freeStationInfo').innerHTML= 'There are these free stations: ' + freeStations.toString();
+            document.querySelector('#freeStationInfo').innerHTML = 'There are these free stations: ' + freeStations.toString();
             const ev = new CustomEvent('originalDataChanged', { bubbles: false, detail: { when: Date().toString() } });
             document.dispatchEvent(ev);
         })
@@ -350,7 +350,13 @@
                     cell.innerHTML = '';
                     cell.appendChild(input);
 
-                    input.addEventListener('click',(e)=>{assignToLabourShare(e.target.value); cell.parentNode.remove()})
+                    input.addEventListener('click', (e) => {
+                        assignToLabourShare(e.target.value);
+                        cell.parentNode.remove()
+                        //Todo Trigger a changedEvent
+                        const ev = new CustomEvent('originalDataChanged', { bubbles: false, detail: { when: Date().toString() } });
+                        document.dispatchEvent(ev);
+                    })
                 }
                 if (cell.classList.contains('editable') && !cell.querySelector('input')) {
                     const originalText = cell.innerText;
@@ -372,10 +378,10 @@
                                 document.querySelector('#unassigned').appendChild(cell.parentNode)
                                 //Recalculate Free Stations.
                                 let inuse = [];
-                                for(let i=1; i<table.rows.length; i++){
+                                for (let i = 1; i < table.rows.length; i++) {
                                     inuse.push(+table.rows[i].cells[1].innerHTML);
                                 }
-                                findEmptyStations(inuse,stations);
+                                findEmptyStations(inuse, stations);
                             }
                             cell.innerHTML = input.value;
                         }

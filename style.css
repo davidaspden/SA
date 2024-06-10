@@ -6,6 +6,13 @@
     font-family: 'Amazon Ember Display', sans-serif;
 }
 
+pre {
+  display: block;
+	background: #f1f1f1;
+	padding: 1.33em;
+	border-radius: 0.33em;
+}
+
 #status {
     content: 'Status Will appear here';
     height: 30px;
@@ -96,7 +103,8 @@
     margin: 4px;
     margin-top: 20px;
     font-size: 10px;
-    overflow:scroll;
+    overflow-x:scroll;
+    overflow-y: hidden;
     &:before {
         content: 'Raw Data';
         position: absolute;
@@ -105,7 +113,7 @@
         font-weight: bold;
         color: #fff;
         background-color: red;;
-        top: -15px;
+        top: -2px;
         margin-bottom: 10px;
         z-index: 2;
         overflow:visible;
