@@ -52,17 +52,7 @@
     border: 1px solid #000;
     
     border-collapse: collapse;
-    &::before {
-        content: 'Station Data';
-        
-        position: relative;
-        border: 1px solid blue;
-        font-weight: bold;
-        color: #fff;
-        background-color: blue;
-        margin-bottom: 10px;
-        top: -15px;
-    }
+    
     #span1 {
         writing-mode: tb-rl;
         transform: rotate(-180deg);
@@ -70,6 +60,27 @@
         color: white;
         width: 1rem;
     }
+}
+#dataTableF1Container{
+  position:relative;
+  display: inline-block;
+  height: auto;
+}
+#dataTableF1Container:before {
+  content: 'Station Data';
+  display: inline-block;
+  position: relative;
+  border: 1px solid rgb(1, 1, 164);
+  font-weight: bold;
+  color: #fff;
+  background-color: blue;
+  margin-bottom: 10px;
+  top: -15px;
+  width: 200px;
+}
+
+#dataTableF1 tr th {
+  height: 40px;
 }
 #dataTableF1 tr:nth-child(even){
     background-color: rgb(78, 13, 17);
@@ -202,4 +213,12 @@
     user-select: none;
     margin-bottom: 3px;
     font-size: 1em;
+  }
+
+  #otherRoles table {
+    box-sizing: border-box;
+    border: 1px solid #979191;
+    font-size: 10px;
+    border-collapse: collapse;
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;
   }

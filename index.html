@@ -31,7 +31,7 @@
         </div>
         <div id="dataSection">
             <div id="main">
-                <table id="dataTableF1"></table>
+                <div id="dataTableF1Container"><table id="dataTableF1"></table></div>
                 <pre id="jsonOutput"></pre>
                 <pre id="singleResultUrl"></pre>
             </div>
@@ -42,6 +42,8 @@
                 <table id="unassigned"></table>
                 <h2>Stand Down</h2>
                 <table id="standDown"></table>
+                <textarea id="namesList"></textarea>
+                <button id="updateStaff"> Update Staff</button>
             </div>
         </div>
     </div>
@@ -122,17 +124,18 @@
 
         // Get Stations
         fetchJsonObject('https://jsonblob.com/api/jsonBlob/1246528442869866496').then((data) => {
-            console.log(data);
             stations = data.floor1.stations; createCountElement("stations", countStations);
             //Get Staff
             fetchJsonObject('https://jsonblob.com/api/jsonBlob/1246532986249011200').then((data) => {
                 staff = [];
-                console.log(stations.length - data.names.length);
+                document.getElementById("namesList").value = data.names.toString();
                 if (stations.length < data.names.length) {
-                    console.log("extras logic");
-                    addRowToUA(data.names.slice(stations.length, data.names.length));
+                    for(let i=0; i<data.names.length - stations.length; i++){
+                        addRowToUA([data.names.slice(stations.length, data.names.length)[i],'---']);
+                    }
+                    
                     data.names.splice(stations.length, data.names.length - stations.length);
-                    console.log(data.names);
+
                 }
                 while (data.names.length > 0) {
                     staff.push(data.names.splice(getRandomNumber(data.names.length), 1)[0]);
@@ -226,7 +229,7 @@
             }
             const row = document.createElement('tr');
 
-            for (let i = 0; i < 3; i++) {
+            for (let i = 0; i < fields.length; i++) {
                 const cell = document.createElement('td');
                 cell.textContent = fields[i] ? fields[i] : '';  // Handle missing fields
                 cell.setAttribute('class', 'editable')
@@ -281,8 +284,10 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            const table = document.querySelector('#dataTableF1');
+            decorateTable(document.querySelector('#dataTableF1'))
+        });
 
+        function decorateTable(table){
             table.addEventListener('click', (event) => {
                 const cell = event.target;
 
@@ -303,6 +308,7 @@
                         } else if (event.key === 'Enter') {
                             if (input.value == '') {
                                 //addToUnassigned
+                                console.log(cell.parentNode);
                                 document.querySelector('#unassigned').appendChild(cell.parentNode)
                             }
                             cell.innerHTML = input.value;
@@ -313,7 +319,7 @@
                     });
                 }
             });
-        });
+        }
 
         function countStations() {
             return stations.length;
@@ -331,40 +337,27 @@
         }
 
         function assignToLabourShare(userid) {
-            labourShare.push([userid, Date.toString()]);
+            labourShare.push([userid, Date().toString()]);
             //We now should fire an event saying labourShare has changed.
-            const ev = new CustomEvent('newLabourShare', { bubbles: false, detail: { assignee: [[userid, Date().toString()]] } });
-
+            const ev = new CustomEvent('newLabourShare', { bubbles: false, detail: { assignee: [userid, Date().toString()] } });
             document.querySelector('#labourShareTable').dispatchEvent(ev);
         }
-        ls = document.querySelector('#labourShareTable');
-        ls.addEventListener('newLabourShare', (e) => {
+        document.querySelector('#labourShareTable').addEventListener('newLabourShare', (e) => {
             addRowToLS(e.detail.assignee);
         }, true)
         // Apply initial filter on page load
 
         function addRowToLS(fields) {
-            const table = document.getElementById('labourShareTable')
+            console.log(fields);
+            const table = document.getElementById('labourShareTable');
             if (!table.getElementsByTagName('tbody')[0]) {
-                tableBody = table.appendChild(document.createElement('tbody'));
-                const row = document.createElement('tr');
-                th1 = document.createElement('th');
-                th1.innerText = 'amazonid';
-                th1.setAttribute('id', 'amazonid');
-                row.appendChild(th1);
-                th2 = document.createElement('th');
-                th2.innerText = 'Time';
-                th2.setAttribute('id', 'Time')
-                row.appendChild(th2);
-                row.appendChild(th2);
-                tableBody.appendChild(row);
+                addTableHeaders(table, ['amazonid', 'time']);
             }
-            else {
-                tableBody = table.getElementsByTagName('tbody')[0]
-            }
+            tableBody = table.getElementsByTagName('tbody')[0]
+
             const row = document.createElement('tr');
 
-            for (let i = 0; i <= fields[0].length; i++) {
+            for (let i = 0; i <= fields.length; i++) {
                 const cell = document.createElement('td');
                 cell.textContent = fields[i] ? fields[i] : '';  // Handle missing fields
                 cell.setAttribute('class', 'editable')
@@ -375,24 +368,30 @@
         function addRowToUA(fields) {
             const table = document.getElementById('unassigned')
             if (!table.getElementsByTagName('tbody')[0]) {
-                tableBody = table.appendChild(document.createElement('tbody'));
-                const row = document.createElement('tr');
-                th1 = document.createElement('th');
-                th1.innerText = 'amazonid';
-                th1.setAttribute('id', 'amazonid');
-                row.appendChild(th1);
-                th2 = document.createElement('th');
-                th2.innerText = 'Time';
-                th2.setAttribute('id', 'Time')
-                row.appendChild(th2);
-                tableBody.appendChild(row);
+                addTableHeaders(table, ['amazonid', 'new station']);
             }
-            else {
-                tableBody = table.getElementsByTagName('tbody')[0]
-            }
+            tableBody = table.getElementsByTagName('tbody')[0]
+            
             const row = document.createElement('tr');
 
             for (let i = 0; i <= fields[0].length; i++) {
+                const cell = document.createElement('td');
+                cell.textContent = fields[i] ? fields[i] : '';  // Handle missing fields
+                cell.setAttribute('class', 'editable')
+                row.appendChild(cell);
+            }
+            tableBody.appendChild(row);
+            decorateTable(table);
+        }
+
+        function addRowToSD(fields) {
+            const table = document.getElementById('standDown')
+            if (!table.getElementsByTagName('tbody')[0]) {
+                addTableHeaders(table, ['amazonid', 'time']);
+            }
+            tableBody = table.getElementsByTagName('tbody')[0]
+
+            for (let i = 0; i < fields.length; i++) {
                 const cell = document.createElement('td');
                 cell.textContent = fields[i] ? fields[i] : '';  // Handle missing fields
                 cell.setAttribute('class', 'editable')
@@ -403,15 +402,15 @@
 
         function addTableHeaders(table, headers) {
             if (!table.getElementsByTagName('tbody')[0]) {
+                tableBody = table.appendChild(document.createElement('tbody'));
+
+                const row = document.createElement('tr');
                 for (let i = 0; i < headers.length; i++) {
-                    tableBody = table.appendChild(document.createElement('tbody'));
-                    const row = document.createElement('tr');
                     th1 = document.createElement('th');
                     th1.innerText = headers[i];
                     th1.setAttribute('id', headers[i]);
                     row.appendChild(th1);
                 }
-
                 tableBody.appendChild(row);
             }
         }
