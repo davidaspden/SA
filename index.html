@@ -37,7 +37,7 @@
                 </div>
                 <div id="freeStationInfo"></div>
                 <pre id="jsonOutput"></pre>
-                <pre id="singleResultUrl"></pre>
+                <pre id="singleResultUrl">-----</pre>
             </div>
             <div id="otherRoles">
                 <h2>Labour Share</h2>
@@ -148,8 +148,14 @@
                 createCountElement("Staff", countStaff);
                 originalData = transposeArray([staff, stations]);
                 originalData.map(addRowToTable);
-                document.getElementById("jsonOutput").innerText = objectToJson(originalData)
+                const ev = new CustomEvent('originalDataChanged', { bubbles: false, detail: { when: Date().toString() } });
+                document.dispatchEvent(ev);
+                
             });
+        });
+
+        document.addEventListener('originalDataChanged', (e)=>{
+            document.getElementById("jsonOutput").innerText = objectToJson(originalData);
         });
 
         //Listen for filters
@@ -308,11 +314,24 @@
         }
         //Find what stations are empty
         function findEmptyStations(assigned, all) {
-            emptyStations = [];
-            console.log(assigned, all);
+            let emptyStations = [];
             all.map((station) => { if (!assigned.includes(station)) { emptyStations.push(station) } });
-            return emptyStations;
+            const ev = new CustomEvent('freestationsChanged', { bubbles: false, detail: { emptyStations: emptyStations } });
+            document.dispatchEvent(ev);
         }
+
+        document.addEventListener('originalDataChanged', (e)=>{
+            ne = originalData.filter((o)=>{return !freeStations.includes(o[1])});
+            originalData = ne;
+        });
+
+        document.addEventListener('freestationsChanged', (e)=>{
+            freeStations = e.detail.emptyStations;
+            document.querySelector('#freeStationInfo').innerHTML= 'There are these free stations: ' + freeStations.toString();
+            const ev = new CustomEvent('originalDataChanged', { bubbles: false, detail: { when: Date().toString() } });
+            document.dispatchEvent(ev);
+        })
+
         //Event Listener to initiate Table decoration
         document.addEventListener('DOMContentLoaded', () => {
             decorateTable(document.querySelector('#dataTableF1'))
@@ -356,7 +375,7 @@
                                 for(let i=1; i<table.rows.length; i++){
                                     inuse.push(+table.rows[i].cells[1].innerHTML);
                                 }
-                                document.querySelector('#freeStationInfo').innerHTML= 'There are these free stations '+ findEmptyStations(inuse,stations);
+                                findEmptyStations(inuse,stations);
                             }
                             cell.innerHTML = input.value;
                         }
