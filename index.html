@@ -30,23 +30,30 @@
             </div>
         </div>
         <div id="dataSection">
-        <div id="main">
-            <table id="dataTableF1"></table>
-            <pre id="jsonOutput"></pre>
-            <pre id="singleResultUrl"></pre>
+            <div id="main">
+                <table id="dataTableF1"></table>
+                <pre id="jsonOutput"></pre>
+                <pre id="singleResultUrl"></pre>
+            </div>
+            <div id="otherRoles">
+                <h2>Labour Share</h2>
+                <table id="labourShareTable"></table>
+                <h2>Unassigned</h2>
+                <table id="unassigned"></table>
+                <h2>Stand Down</h2>
+                <table id="standDown"></table>
+            </div>
         </div>
-        <div id="otherRoles">
-            <table id="labourShare"></table>
-            <table id="unassigned"></table>
-            <table id="standDown"></table>
-        </div>
-    </div>
     </div>
     <div id="status"></div>
     <script>
         let originalData = []; //This is the place for the actual current list
-        let unassigned =[];
+        let unassigned = [];
+        let state = {};
         let stations = [];
+        let labourShare = [];
+        let freeStations = [];
+        let standDown = [];
         let sides = ['North', 'West', 'South'];
         let floors = ['P2', 'P3', 'P4'];
         let names = "http://jsonblob.com/1246532986249011200";
@@ -64,7 +71,7 @@
         });
 
         //Get the station list from JSONblob
-        async function putJsonState(url,data) {
+        async function putJsonState(url, data) {
             try {
                 const response = await fetch(url, {
                     method: 'PUT',
@@ -120,16 +127,20 @@
             //Get Staff
             fetchJsonObject('https://jsonblob.com/api/jsonBlob/1246532986249011200').then((data) => {
                 staff = [];
-
+                console.log(stations.length - data.names.length);
+                if (stations.length < data.names.length) {
+                    console.log("extras logic");
+                    addRowToUA(data.names.slice(stations.length, data.names.length));
+                    data.names.splice(stations.length, data.names.length - stations.length);
+                    console.log(data.names);
+                }
                 while (data.names.length > 0) {
                     staff.push(data.names.splice(getRandomNumber(data.names.length), 1)[0]);
                 }
                 createCountElement("Staff", countStaff);
                 originalData = transposeArray([staff, stations]);
                 originalData.map(addRowToTable);
-                originalData.map((r) => { console.log(r) });
                 document.getElementById("jsonOutput").innerText = objectToJson(originalData)
-
             });
         });
 
@@ -152,11 +163,11 @@
         document.getElementById('singleResultUrl').addEventListener('click', function () {
             copyContent(document.getElementById('singleResultUrl').innerText)
         });
-        document.getElementById('saveButton').addEventListener('click', ()=>{
-            putJsonState('https://jsonblob.com/api/jsonBlob/1249339120978616320','test2')
+        document.getElementById('saveButton').addEventListener('click', () => {
+            putJsonState('https://jsonblob.com/api/jsonBlob/1249339120978616320', 'test2')
             c = document.createElement("div");
             c.setAttribute("id", 'Last Saved')
-            c.innerHTML = "Last Saved: "+Date.now().toDateString();
+            c.innerHTML = "Last Saved: " + Date(Date.now()).toString();
             document.getElementById("status").appendChild(c)
         })
 
@@ -246,7 +257,6 @@
             tableBody.innerHTML = '';  // Clear current table
 
             const filteredData = originalData.filter(fields => fields[0] && fields[0].startsWith(query));
-            console.log(filteredData);
             filteredData.forEach(fields => {
                 console.log('adding filtered fields')
                 addRowToTable(fields);
@@ -291,7 +301,7 @@
                         if (event.key === 'Escape') {
                             cell.innerHTML = originalText;
                         } else if (event.key === 'Enter') {
-                            if (input.value == ''){
+                            if (input.value == '') {
                                 //addToUnassigned
                                 document.querySelector('#unassigned').appendChild(cell.parentNode)
                             }
@@ -299,8 +309,8 @@
                         }
                     });
                     input.addEventListener('blur', () => {
-                cell.innerHTML = originalText;
-            });
+                        cell.innerHTML = originalText;
+                    });
                 }
             });
         });
@@ -319,7 +329,92 @@
             c.innerHTML = name + "Count: " + count();
             document.getElementById("status").appendChild(c)
         }
+
+        function assignToLabourShare(userid) {
+            labourShare.push([userid, Date.toString()]);
+            //We now should fire an event saying labourShare has changed.
+            const ev = new CustomEvent('newLabourShare', { bubbles: false, detail: { assignee: [[userid, Date().toString()]] } });
+
+            document.querySelector('#labourShareTable').dispatchEvent(ev);
+        }
+        ls = document.querySelector('#labourShareTable');
+        ls.addEventListener('newLabourShare', (e) => {
+            addRowToLS(e.detail.assignee);
+        }, true)
         // Apply initial filter on page load
+
+        function addRowToLS(fields) {
+            const table = document.getElementById('labourShareTable')
+            if (!table.getElementsByTagName('tbody')[0]) {
+                tableBody = table.appendChild(document.createElement('tbody'));
+                const row = document.createElement('tr');
+                th1 = document.createElement('th');
+                th1.innerText = 'amazonid';
+                th1.setAttribute('id', 'amazonid');
+                row.appendChild(th1);
+                th2 = document.createElement('th');
+                th2.innerText = 'Time';
+                th2.setAttribute('id', 'Time')
+                row.appendChild(th2);
+                row.appendChild(th2);
+                tableBody.appendChild(row);
+            }
+            else {
+                tableBody = table.getElementsByTagName('tbody')[0]
+            }
+            const row = document.createElement('tr');
+
+            for (let i = 0; i <= fields[0].length; i++) {
+                const cell = document.createElement('td');
+                cell.textContent = fields[i] ? fields[i] : '';  // Handle missing fields
+                cell.setAttribute('class', 'editable')
+                row.appendChild(cell);
+            }
+            tableBody.appendChild(row);
+        }
+        function addRowToUA(fields) {
+            const table = document.getElementById('unassigned')
+            if (!table.getElementsByTagName('tbody')[0]) {
+                tableBody = table.appendChild(document.createElement('tbody'));
+                const row = document.createElement('tr');
+                th1 = document.createElement('th');
+                th1.innerText = 'amazonid';
+                th1.setAttribute('id', 'amazonid');
+                row.appendChild(th1);
+                th2 = document.createElement('th');
+                th2.innerText = 'Time';
+                th2.setAttribute('id', 'Time')
+                row.appendChild(th2);
+                tableBody.appendChild(row);
+            }
+            else {
+                tableBody = table.getElementsByTagName('tbody')[0]
+            }
+            const row = document.createElement('tr');
+
+            for (let i = 0; i <= fields[0].length; i++) {
+                const cell = document.createElement('td');
+                cell.textContent = fields[i] ? fields[i] : '';  // Handle missing fields
+                cell.setAttribute('class', 'editable')
+                row.appendChild(cell);
+            }
+            tableBody.appendChild(row);
+        }
+
+        function addTableHeaders(table, headers) {
+            if (!table.getElementsByTagName('tbody')[0]) {
+                for (let i = 0; i < headers.length; i++) {
+                    tableBody = table.appendChild(document.createElement('tbody'));
+                    const row = document.createElement('tr');
+                    th1 = document.createElement('th');
+                    th1.innerText = headers[i];
+                    th1.setAttribute('id', headers[i]);
+                    row.appendChild(th1);
+                }
+
+                tableBody.appendChild(row);
+            }
+        }
         window.onload = applyInitialFilter;
     </script>
 </body>
