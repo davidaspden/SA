@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 
 <head>
-    <script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.cdnfonts.com/css/amazon-ember" rel="stylesheet">
 </head>
@@ -26,7 +25,7 @@
         <div id="searchSection">
             <input type="text" id="filterInput" placeholder="Filter by Amazonid" />
             <div id="admin">
-                <input type="file" id="fileInput" />
+                <!--<input type="file" id="fileInput" />-->
                 <input type="button" id="saveButton" value="Save" />
             </div>
         </div>
@@ -34,6 +33,7 @@
             <div id="main">
                 <div id="dataTableF1Container">
                     <table id="dataTableF1"></table>
+                    <button id="Decorate">Decorate</button>
                 </div>
                 <div id="freeStationInfo"></div>
                 <pre id="jsonOutput"></pre>
@@ -44,10 +44,14 @@
                 <table id="labourShareTable"></table>
                 <h2>Unassigned</h2>
                 <table id="unassigned"></table>
+                <h2>Cart Runners</h2>
+                <table id="cartrunnersTable"></table>
                 <h2>Stand Down</h2>
                 <table id="standDown"></table>
+                <h2>Current Staff Available</h2>
                 <textarea id="namesList"></textarea>
                 <button id="updateStaff"> Update Staff</button>
+                <button id="autoAssign"> Toggle Auto Assign</button>
             </div>
         </div>
     </div>
@@ -57,12 +61,16 @@
         let unassigned = [];
         let state = {};
         let stations = [];
+        let availableStaff =[];
         let labourShare = [];
         let freeStations = [];
         let standDown = [];
+        let cartEunners =[];
         let sides = ['North', 'West', 'South'];
         let floors = ['P2', 'P3', 'P4'];
+        //Persistence Links
         let names = "http://jsonblob.com/1246532986249011200";
+        if(document.getElementById('fileInput')){
         document.getElementById('fileInput').addEventListener('change', function (event) {
             const file = event.target.files[0];
             if (file) {
@@ -75,6 +83,7 @@
                 reader.readAsText(file);
             }
         });
+    }
 
         //Get the station list from JSONblob
         async function putJsonState(url, data) {
@@ -129,11 +138,15 @@
         //Populate the Data
         // Get Stations
         fetchJsonObject('https://jsonblob.com/api/jsonBlob/1246528442869866496').then((data) => {
-            stations = data.floor1.stations; createCountElement("stations", countStations);
+            stations = data.floor1.stations; 
+            createCountElement("stations", countStations);
+
             //Get Staff
             fetchJsonObject('https://jsonblob.com/api/jsonBlob/1246532986249011200').then((data) => {
                 staff = [];
+                //Send to the manual edit box. Functionality to edit names comes later.
                 document.getElementById("namesList").value = data.names.toString();
+                availableStaff.push(...data.names);
                 if (stations.length < data.names.length) {
                     for (let i = 0; i < data.names.length - stations.length; i++) {
                         addRowToUA([data.names.slice(stations.length, data.names.length)[i], '---']);
@@ -148,6 +161,8 @@
                 createCountElement("Staff", countStaff);
                 originalData = transposeArray([staff, stations]);
                 originalData.map(addRowToTable);
+
+                createPreCountedElement("Floor Status",printFloorStatus(getFloorCountsObj(transposeArray(originalData)[1],[1,2])));
                 const ev = new CustomEvent('originalDataChanged', { bubbles: false, detail: { when: Date().toString() } });
                 document.dispatchEvent(ev);
 
@@ -208,7 +223,7 @@
 
         //Listen for the save button being pressed.
         document.getElementById('saveButton').addEventListener('click', () => {
-            putJsonState('https://jsonblob.com/api/jsonBlob/1249339120978616320', 'test2')
+            putJsonState('https://jsonblob.com/api/jsonBlob/1249339120978616320', 'test4')
             c = document.createElement("div");
             c.setAttribute("id", 'Last Saved')
             c.innerHTML = "Last Saved: " + Date(Date.now()).toString();
@@ -230,6 +245,37 @@
             };
 
             return newArray;
+        }
+
+        //Function to count based upon a filter
+        function getFloorCount(originalData, floor) {
+            return originalData.reduce((a, c) => { return c.toString()[0] == floor.toString() ? a + 1 : a },)
+        }
+        //Function Count Stations by floor
+        //takes some floor data, then an array of floors
+        function getFloorCountsObj(originalData, floorsToCount) {
+            // Initialize an object with floorsToCount as keys and 0 as their initial count
+            const floorCountMap = floorsToCount.reduce((acc, floor) => {
+                acc[floor] = 0;
+                return acc;
+            }, {});
+
+            // Iterate over the original data to count occurrences
+            originalData.forEach(number => {
+                const firstDigit = number.toString()[0];
+                if (floorCountMap.hasOwnProperty(firstDigit)) {
+                    floorCountMap[firstDigit]++;
+                }
+            });
+            return floorCountMap;
+        }
+
+        //Pretty Print The Floor Count Obj
+        //Takes a counted floor object.
+        function printFloorStatus(fcObj) {
+            return Object.entries(fcObj)
+                .map(([key, value]) => `Floor ${key}:${value}`)
+                .join(' | ');
         }
 
         //Functionality to parse a saved file
@@ -358,6 +404,11 @@
         //Event Listener to initiate Table decoration
         document.addEventListener('DOMContentLoaded', () => {
             decorateTable(document.querySelector('#dataTableF1'))
+            document.getElementById('autoAssign').addEventListener('click',
+            putJsonState("https://jsonblob.com/api/Jsonblob/1250688408748941312",{
+  "status": "Closed",
+  "lastChanged": new Date().toString()
+}).then(console.log("done")).catch(console.log("error")))
         });
         //Table Decoration logic - adding utility
         function decorateTable(table) {
@@ -421,13 +472,21 @@
         }
 
         function countStaff() {
-            return staff.length;
+            return availableStaff.length;
         }
 
         function createCountElement(name, count) {
             c = document.createElement("div");
-            c.setAttribute("id", name)
-            c.innerHTML = name + "Count: " + count();
+            c.setAttribute("id", name.replace(/\s+/g, ''))
+            c.innerHTML = name + " Count: " + count();
+            document.getElementById("status").appendChild(c)
+        }
+
+        function createPreCountedElement(name, precount) {
+            c = document.createElement("div");
+            id = name.replace(/\s+/g, '');
+            c.setAttribute("id", id);
+            c.innerHTML = name +": " + precount;
             document.getElementById("status").appendChild(c)
         }
 
@@ -458,6 +517,31 @@
                 row.appendChild(cell);
             }
             tableBody.appendChild(row);
+        }
+        function dec(table) {
+
+            for (i = 1; i < table.rows.length; i++) {
+                td = document.createElement("td");
+                td.setAttribute("data-func", "dec");
+                td.appendChild(createLSButton());
+                table.rows[i].appendChild(td);
+            }
+        }
+
+        function createLSButton() {
+            b = document.createElement("button");
+            b.setAttribute("value", "Labour Share");
+            b.innerText = "Labour Share";
+            b.addEventListener("click", (e) => {
+                row = e.target.closest("tr");
+                rowData = row.getAttribute("data-row");
+                console.log(rowData);
+                rowData = JSON.parse(rowData);
+                inp = document.createElement("input");
+                inp.value = rowData.S1;
+                e.target.parentNode.appendChild(inp);
+            });
+            return b;
         }
 
         //Add a row to the unassigned table
