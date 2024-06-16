@@ -1,0 +1,228 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Station Allocation Tool</title>
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+
+        #status-bar {
+            position: absolute;
+            box-sizing: border-box;
+            bottom: 0;
+            width: 100%;
+            background-color: black;
+            color: white;
+            padding: 10px;
+            border-top: 3px solid red;
+            font-size: 1em;
+            box-shadow: 0px 8px 30px 20px blue;
+        }
+    </style>
+    <link rel="stylesheet" href="styleUser.css">
+</head>
+<body>
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <label for="badgeID">BadgeID</label>
+            <input type="text" id="badgeID" name="badgeID">
+            <label for="amazonID">AmazonID</label>
+            <input type="text" id="amazonID" name="amazonID">
+            <button id="confirmBtn">Confirm</button>
+        </div>
+    </div>
+    <div class="container">
+        <h1>Station Allocation Tool</h1>
+        <label for="username">Type Username or Scan Badge:</label>
+        <input type="text" id="username" name="username">
+    </div>
+    <div id="lock" class="modal">
+        <div class="modal-content">
+            <h2>Auto Assignment Closed. Find Team Lead</h2>
+        </div>
+    </div>
+    <div id="sendToTask" class="modal">
+        <div class="modal-content">
+            <h2>Please go to the following station / role:</h2><br />
+            <div id="assignedTo"></div>
+            <p>Stay Safe - Work Hard - Have Fun - Make History</p>
+        </div>
+    </div>
+
+    <div id="status-bar">status: </div>
+    <script type="text/javascript">
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+                var modal = document.getElementById("myModal");
+                modal.style.display = "none";
+                var lock = document.getElementById("lock");
+                lock.style.display = "none";
+                var sendToTask = document.getElementById("sendToTask");
+                sendToTask.style.display = "none";
+            }
+        });
+        var UIrefresh;
+        //Badges: http://jsonblob.com/1251980119433404416
+        document.getElementById("username").addEventListener("keyup", function (event) {
+            if (event.key === "Enter") {
+                var input = document.getElementById("username").value;
+                //If all characters, bet we have a valid username
+                if (/^[a-z]+$/.test(input)) {
+                    assignStation(input, "Demo");
+                }
+                if (/^\d+$/.test(input)) {
+                    let url = "https://jsonblob.com/api/jsonblob/1251980119433404416";
+                    fetch(url, {
+                        headers: {
+                            accept: "application/json",
+                            "accept-language": "en-GB",
+                            "cache-control": "no-cache"
+                        },
+                        method: "GET"
+                    })
+                        .then(function (response) {
+                            return response.json();
+                        })
+                        .then(function (json) {
+                            var values = Object.values(json.userBadges);
+
+                            if (!values.includes(input)) {
+                                var modal = document.getElementById("myModal");
+                                modal.style.display = "block";
+                                document.getElementById("badgeID").value = input;
+                                document.getElementById("confirmBtn").addEventListener("click", function () {
+                                    if (amazonID == "") {
+                                        //We need tp put the focus back on the input field
+                                        document.getElementById("amazonID").focus();
+                                    }
+                                    var badgeID = document.getElementById("badgeID").value;
+                                    var amazonID = document.getElementById("amazonID").value;
+                                    if (badgeID && amazonID) {
+
+                                        json.lastUpdated = new Date().toString();
+                                        json.userBadges= (json.userBadges, { [badgeID]: amazonID });
+
+                                        var urlPost = "https://jsonblob.com/api/jsonBlob/1251980119433404416";
+                                        fetch(urlPost, {
+                                            headers: {
+                                                accept: "application/json",
+                                                "accept-language": "en-GB",
+                                                "cache-control": "no-cache",
+                                                "content-type": "application/json"
+                                            },
+                                            method: "PUT",
+                                            body: JSON.stringify({
+                                                badgeID: badgeID,
+                                                amazonID: amazonID
+                                            })
+                                        })
+                                            .then(function (response) {
+                                                return response.json();
+                                            })
+                                            .then(function (json) {
+                                                console.log(json);
+                                                amazonID = "";
+                                                badgeID = "";
+                                                modal.style.display = "none";
+                                                document.getElementById("username").value = "";
+                                                document.getElementById("username").focus();
+                                            }).catch(function (error) {
+                                                console.error("Error:", error);
+                                            });
+                                    }
+                                });
+                            }
+                            else {
+                                //We need to find the user from the json.userBadges
+                                var userBadges = json.userBadges;
+                                var userid = Object.keys(userBadges).find(function (key) {
+                                    return userBadges[key] === input;
+                                });
+
+
+                                // Call the function with the userid and station
+                                assignStation(userid, "Demo");
+
+                            }
+                        });
+                }
+            }
+        });
+
+        function mergeObj(obj1,obj2){
+            let obj3 = {};
+            for (let attrname in obj1) { obj3[attrname] = obj1[attrname]; }
+            for (let attrname in obj2) { obj3[attrname] = obj2[attrname]; }
+            return obj3;
+        }
+
+        function assignStation(userid, station) {
+            document.getElementById("assignedTo").innerText = `Hi ${userid} you have been assigned to:${station}`;
+            document.getElementById("sendToTask").style.display = "block";
+            setTimeout(() => {
+                document.getElementById("assignedTo").innerText = "";
+                document.getElementById("sendToTask").style.display = "none";
+                document.getElementById("username").value = "";
+                document.getElementById("username").focus();
+            }, 20000);
+        }
+
+
+        document.addEventListener("DOMContentLoaded", function () {
+            var lock = document.getElementById("lock");
+            var modal = document.getElementById("myModal");
+            var confirmBtn = document.getElementById("confirmBtn");
+
+            // Show the modal when the page loads
+            modal.style.display = "none";
+
+            // Close the modal when the confirm button is clicked
+            confirmBtn.addEventListener("click", function () {
+                modal.style.display = "none";
+            });
+
+            UIrefresh = setInterval(() => {
+                getStatus();
+                document.getElementById("username").focus();
+            }, 20000);
+        });
+        //This function will get the readiness of the system. It can be opened and closed from admin page
+        function getStatus() {
+            url = "https://jsonblob.com/api/Jsonblob/1250688408748941312";
+            fetch(url, {
+                headers: {
+                    accept: "application/json",
+                    "accept-language": "en-GB",
+                    "cache-control": "no-cache"
+                },
+                method: "GET"
+            })
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (json) {
+                    document.getElementById("status-bar").innerText =
+                        "Status: " + json.status;
+                    if (json.status == "Closed") {
+                        lock.style.display = "block";
+                    }
+                    else {
+                        lock.style.display = "none";
+                    }
+                });
+        }
+
+    </script>
+</body>
+
+</html>

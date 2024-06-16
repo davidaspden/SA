@@ -51,7 +51,7 @@
                 <h2>Current Staff Available</h2>
                 <textarea id="namesList"></textarea>
                 <button id="updateStaff"> Update Staff</button>
-                <button id="autoAssign"> Toggle Auto Assign</button>
+                <button id="autoAssign">Open AutoAssign</button>
             </div>
         </div>
     </div>
@@ -61,29 +61,29 @@
         let unassigned = [];
         let state = {};
         let stations = [];
-        let availableStaff =[];
+        let availableStaff = [];
         let labourShare = [];
         let freeStations = [];
         let standDown = [];
-        let cartEunners =[];
+        let cartEunners = [];
         let sides = ['North', 'West', 'South'];
         let floors = ['P2', 'P3', 'P4'];
         //Persistence Links
         let names = "http://jsonblob.com/1246532986249011200";
-        if(document.getElementById('fileInput')){
-        document.getElementById('fileInput').addEventListener('change', function (event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    const contents = e.target.result;
-                    parseFile(contents);
-                    applyInitialFilter();
-                };
-                reader.readAsText(file);
-            }
-        });
-    }
+        if (document.getElementById('fileInput')) {
+            document.getElementById('fileInput').addEventListener('change', function (event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const contents = e.target.result;
+                        parseFile(contents);
+                        applyInitialFilter();
+                    };
+                    reader.readAsText(file);
+                }
+            });
+        }
 
         //Get the station list from JSONblob
         async function putJsonState(url, data) {
@@ -138,7 +138,7 @@
         //Populate the Data
         // Get Stations
         fetchJsonObject('https://jsonblob.com/api/jsonBlob/1246528442869866496').then((data) => {
-            stations = data.floor1.stations; 
+            stations = data.floor1.stations;
             createCountElement("stations", countStations);
 
             //Get Staff
@@ -162,7 +162,7 @@
                 originalData = transposeArray([staff, stations]);
                 originalData.map(addRowToTable);
 
-                createPreCountedElement("Floor Status",printFloorStatus(getFloorCountsObj(transposeArray(originalData)[1],[1,2])));
+                createPreCountedElement("Floor Status", printFloorStatus(getFloorCountsObj(transposeArray(originalData)[1], [1, 2])));
                 const ev = new CustomEvent('originalDataChanged', { bubbles: false, detail: { when: Date().toString() } });
                 document.dispatchEvent(ev);
 
@@ -404,11 +404,30 @@
         //Event Listener to initiate Table decoration
         document.addEventListener('DOMContentLoaded', () => {
             decorateTable(document.querySelector('#dataTableF1'))
-            document.getElementById('autoAssign').addEventListener('click',
-            putJsonState("https://jsonblob.com/api/Jsonblob/1250688408748941312",{
-  "status": "Closed",
-  "lastChanged": new Date().toString()
-}).then(console.log("done")).catch(console.log("error")))
+            //Add a button to open or close the auto assign feature
+            document.getElementById('autoAssign').addEventListener('click', () => {
+                if (document.getElementById('autoAssign').innerText == 'Close AutoAssign') {
+                    putJsonState("https://jsonblob.com/api/Jsonblob/1250688408748941312", {
+                        "status": "Closed",
+                        "lastChanged": new Date().toString()
+                    }).then(() => {
+                        document.getElementById('autoAssign').innerText = 'Open AutoAssign';
+                    }).catch((error) => {
+                        console.log(error);
+                    });
+                }
+                if (document.getElementById('autoAssign').innerText == 'Open AutoAssign') {
+                    putJsonState("https://jsonblob.com/api/Jsonblob/1250688408748941312", {
+                        "status": "Open",
+                        "lastChanged": new Date().toString()
+                    }).then(() => {
+                        document.getElementById('autoAssign').innerText = 'Close AutoAssign';
+                    }).catch((error) => {
+                        console.log(error);
+                    });
+                }
+
+            });
         });
         //Table Decoration logic - adding utility
         function decorateTable(table) {
@@ -486,7 +505,7 @@
             c = document.createElement("div");
             id = name.replace(/\s+/g, '');
             c.setAttribute("id", id);
-            c.innerHTML = name +": " + precount;
+            c.innerHTML = name + ": " + precount;
             document.getElementById("status").appendChild(c)
         }
 

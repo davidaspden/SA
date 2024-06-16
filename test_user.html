@@ -1,0 +1,207 @@
+<!--//Here we want a mobile first site that displays a 2 item table, colum1: amazonid, column2: allocated station
+//with a dynamic search bar that filters the table based on the search query
+//The search bar should be able to search for both amazonid and allocated station
+//We should also be able to filter by the 1st and second digit of the station id
+//We should be able to see all 174 stations or just assigned stations with a check box toggle
+//the column headers should be clickable to sort the table by that column
+//All stations list: https://jsonblob.com/1250140915040641024-->
+<html lang="en">
+
+<head>
+    <script type="text/javascript" src="qrcode.js"></script>
+    <script type="text/javascript" src="barcode.js"></script>
+    <title>Mobile Station Finder</title>
+    <meta name="theme-color" content="#146eb4">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            /*Colour Palette*/
+            --c1: #ff9900;
+            --c2: #146eb4;
+            --c3: #000000;
+            --c4: #232f3e;
+            --c5: #f2f2f2;
+        }
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            font-size: large;
+            touch-action: none;
+            /* Disables default touch actions */
+        }
+
+        body {
+            background-color: var(--c4);
+        }
+
+        h1 {
+            color: var(--c2);
+            text-align: center;
+            display: block;
+            border-bottom: 2px solid var(--c5);
+        }
+
+        table:nth-child(even) {
+            background-color: var(--c2);
+        }
+
+        table:nth-child(odd) {
+            background-color: var(--c3);
+            color: var(--c5);
+        }
+        #tabContent {
+            position: absolute;
+            top: -100px;
+            left: 0;
+            width: 100vw;
+            height: 100px;
+            box-sizing: border-box;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0px 8px 30px 20px var(--c1);
+            z-index: 100;
+            display:none;
+        }
+
+        #forgotBadge {
+            position: absolute;
+            box-sizing: border-box;
+            bottom: -90px;
+            background-color: #f1f1f1;
+            padding: 10px;
+            border: 1px solid #000;
+            width: 100vw;
+            box-shadow:  -9px 5px 5px var(--c1);
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            transition: all cubic-bezier(0.6, -0.28, 0.735, 0.045) 1.5s;
+        }
+
+        #forgotBadge h3 {
+            cursor: pointer;
+            box-sizing: border-box;
+            height: 30px;
+            width: 100vw;
+            text-align: center;
+        }
+
+        #badgeDisplay {
+            width: 100vw;
+            box-sizing: border-box;
+            height: 100px;
+            display: none;
+
+        }
+
+        #container {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            width: 100vw;
+            height: 100vh;
+            flex-wrap: wrap;
+            align-content: space-around;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="tabContent">
+        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+            <g id="qrcode" />
+        </svg>
+    </div>
+    <div id="container">
+        <h1>Mobile Station Finder</h1>
+        <div id="searchFilter">
+            <label for="search">Search:</label>
+            <input type="text" id="search" name="search">
+            <label for="showAll">Show All:</label>
+            <input type="checkbox" id="showAll" name="showAll">
+        </div>
+    </div>
+
+    <div id="forgotBadge">
+        <h3>Click For badge</h3>
+        <div id="badgeDisplay"></div>
+    </div>
+    <script type="text/javascript">
+
+let fullStationList = "https://jsonblob.com/api/jsonBlob/1250140915040641024";
+
+                    fetch(fullStationList, {
+                        headers: {
+                            accept: "application/json",
+                            "accept-language": "en-GB",
+                            "cache-control": "no-cache"
+                        },
+                        method: "GET"
+                    })
+                        .then(function (response) {
+                            return response.json();
+                        })
+                        .then(function (json) {
+                            createTableFromArray(["AmazonID", "Station"], json.floors);
+                        })
+
+                        function createTableFromArray(headers, id, data) {
+                            let table = document.createElement('table');
+                            let thead = document.createElement('thead');
+                            let tbody = document.createElement('tbody');
+                            let tr = document.createElement('tr');
+                            headers.forEach(header => {
+                                let th = document.createElement('th');
+                                th.textContent = header;
+                                th.addEventListener('click', function () {
+                                    sortTable(table, headers.indexOf(header));
+                                })
+                                tr.appendChild(th);
+                            })
+                            thead.appendChild(tr);
+                            table.appendChild(thead);
+                            data.forEach(row => {
+                                let tr = document.createElement('tr');
+                                headers.forEach(header => {
+                                    let td = document.createElement('td');
+                                    td.textContent = row[0];
+                                    tr.appendChild(td);
+                                })
+                                tbody.appendChild(tr);
+                            })
+                            table.appendChild(tbody);
+                            table.id = id;
+                            document.getElementById('container').appendChild(table);
+                        }
+        document.getElementById('forgotBadge').addEventListener('click', function () {
+            document.getElementById('badgeDisplay').style.display = 'block';
+            document.getElementById('badgeDisplay').style.bottom = '0px';
+        })
+        var qrcode = new QRCode(document.getElementById("qrcode"), {
+            width: 100,
+            height: 100,
+            useSVG: true
+        });
+        const url = `${window.location.origin}${window.location.pathname}`
+        qrcode.makeCode(url);
+
+        var barcode = BARCode({
+            msg: '123'
+            , dim: [0, 80] /* vertical */
+            , pad: [16, 20] /* padding */
+            , pal: ['#000', '#fff'] /* palette */
+        })
+        document.getElementById('badgeDisplay').appendChild(barcode);
+    </script>
+</body>
+
+</html>
