@@ -4,6 +4,27 @@
     margin: 0px;
     padding: 0px;
     font-family: 'Amazon Ember Display', sans-serif;
+    /*Colour Palette*/
+    --c1: #ff9900;
+    --c2: #146eb4;
+    --c3: #000000;
+    --c4: #232f3e;
+    --c5: #f2f2f2;
+
+    --c1rgb: rgba(255, 153, 0);
+    --c2rgb: rgba(20, 110, 180);
+    --c3rgb: rgba(0, 0, 0);
+    --c4rgb: rgba(35, 47, 62);
+    --c5rgb: rgb(242, 242, 242);
+    --c5rgba10: rgba(242, 242, 242, 0.1);
+}
+
+body {
+  background-color: #232f3e;
+  background-image: linear-gradient(to right, var(--c5rgba10) 1px , transparent 1px)
+  , linear-gradient(to bottom, var(--c5rgba10) 1px , transparent 1px);
+  background-size: 8vh 8vh;
+
 }
 
 pre {

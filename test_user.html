@@ -5,7 +5,7 @@
 //We should be able to see all 174 stations or just assigned stations with a check box toggle
 //the column headers should be clickable to sort the table by that column
 //All stations list: https://jsonblob.com/1250140915040641024-->
-<html lang="en">
+<!DOCTYPE html lang="en">
 
 <head>
     <script type="text/javascript" src="qrcode.js"></script>
@@ -13,6 +13,10 @@
     <title>Mobile Station Finder</title>
     <meta name="theme-color" content="#146eb4">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.cdnfonts.com/css/amazon-ember" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+        integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w=="
+        crossorigin="anonymous" />
     <style>
         * {
             /*Colour Palette*/
@@ -21,6 +25,15 @@
             --c3: #000000;
             --c4: #232f3e;
             --c5: #f2f2f2;
+
+            --c1rgb: rgba(255, 153, 0);
+            --c2rgb: rgba(20, 110, 180);
+            --c3rgb: rgba(0, 0, 0);
+            --c4rgb: rgba(35, 47, 62);
+            --c5rgb: rgb(242, 242, 242);
+            --c5rgba10: rgba(242, 242, 242, 0.1);
+
+
         }
 
         body,
@@ -40,13 +53,18 @@
 
         body {
             background-color: var(--c4);
+            color: var(--c5);
+            background-image: linear-gradient(to right, var(--c5rgba10) 1px, transparent 1px), linear-gradient(to bottom, var(--c5rgba10) 1px, transparent 1px);
+            background-size: 4vh 4vh;
         }
 
         h1 {
+            font-family: "Amazon Ember";
             color: var(--c2);
             text-align: center;
             display: block;
             border-bottom: 2px solid var(--c5);
+            margin-top: 4vh;
         }
 
         table:nth-child(even) {
@@ -57,29 +75,18 @@
             background-color: var(--c3);
             color: var(--c5);
         }
-        #tabContent {
-            position: absolute;
-            top: -100px;
-            left: 0;
-            width: 100vw;
-            height: 100px;
-            box-sizing: border-box;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0px 8px 30px 20px var(--c1);
-            z-index: 100;
-            display:none;
-        }
+
 
         #forgotBadge {
             position: absolute;
             box-sizing: border-box;
-            bottom: -90px;
-            background-color: #f1f1f1;
+            bottom: 0px;
+            margin-bottom: -90px;
+            background-image: linear-gradient(to bottom, var(--c2) 3px, var(--c1));
             padding: 10px;
-            border: 1px solid #000;
+            border-top: 2px solid #000;
             width: 100vw;
-            box-shadow:  -9px 5px 5px var(--c1);
+            box-shadow: -9px 5px 5px var(--c1);
             height: 120px;
             display: flex;
             flex-direction: column;
@@ -106,26 +113,224 @@
         #container {
             display: flex;
             flex-direction: column;
+            flex-wrap: nowrap;
             justify-content: flex-start;
             width: 100vw;
             height: 100vh;
             flex-wrap: wrap;
-            align-content: space-around;
+            align-content: center;
+        }
+
+        :root {
+            --calcHeight: 0px;
+        }
+
+        #utility {
+            display: flex;
+            gap: 50px;
+            position: relative;
+            border-bottom: 3px solid grey;
+            margin-top: var(--calcHeight);
+            transition: all 400ms ease-in-out;
+            padding: 8px;
+            user-select: none;
+            box-shadow: grey 0px 10px 10px;
+            flex-direction: row;
+        }
+
+        #utility h2 {
+            font-size: 1.5em;
+            font-family: "Amazon Ember";
+            color: var(--c2);
+            display: block;
+        }
+
+        #click {
+            position: absolute;
+            border-radius: 0px 0px 10px 10px;
+            box-sizing: border-box;
+            user-select: none;
+            position: absolute;
+            border: 2px solid black;
+            border-top: none;
+            right: 100px;
+            top: var(--calcHeight);
+            font-size: 1rem;
+            cursor: pointer;
+            text-align: center;
+            transition: transform 500ms ease;
+            background-image: linear-gradient(to bottom right, grey, lightgray);
+
+            &:hover {
+                transform: scaleX(1.2);
+            }
+
+            &:before {
+                content: '\25BA ';
+                display: inline-block;
+                width: 16px;
+            }
+
+            p {
+                padding: 4px;
+                display: inline-block;
+                font-size: 1rem;
+            }
+        }
+
+        * {
+            padding: 0px;
+            margin: 0px;
+        }
+
+        #searchFilter {
+            margin-bottom: 8px;
+        }
+
+        .textbox {
+            -moz-appearance: none;
+            -webkit-appearance: none;
+            appearance: none;
+            outline: none;
+
+            font: inherit;
+            /* From .input-group */
+
+            border: 1px solid transparent;
+            padding-top: calc(0.5em - 1px);
+            padding-bottom: calc(0.5em - 1px);
+            padding-left: calc(0.5em - 1px);
+            padding-right: calc(0.5em - 1px);
+            border-radius: 2px;
+            /* Your style */
+        }
+
+        .textbox::placeholder {
+            opacity: 0.35;
+            /* Your style */
+        }
+
+        /* ICONS Base Syle
+------------------------------------------
+** 1. Color
+** 2. Size and position (only top)
+** 3. Center content
+** 4. Transition animation
+** 5. Disable mouse clicks
+--------------------------------------- */
+        .icon {
+            color: inherit;
+            /* From input-group */
+            opacity: 0.35;
+            /* Same as placeholder */
+
+            width: 1em;
+            height: 1em;
+
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            transition: opacity .24s ease-in-out;
+            pointer-events: none;
+            /* Disable click */
+            /*   background-color: rgba(0,0,200, 0.3);  */
+        }
+
+        /* Optional */
+        .icon.bg {
+            background-color: rgba(11, 5, 100, 0.73);
+        }
+
+        /* INPUT GROUP (input + icons wrapper)
+** REMs = textbox size
+--------------------------------------- */
+        .input-group {
+            font-size: 1 em;
+            /* CHANGE */
+            background: white;
+            border-radius: 2px;
+            /* Your style */
+
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        
+
+        
+
+        /* When icon as prefix */
+        .icon:not(.bg)~.textbox {
+            padding-left: 0;
+            /* Removes left padding */
+        }
+
+        /* When icon as suffix */
+        .textbox~.icon:not(.bg) {
+            margin-left: calc(1px - 0.5em);
+            /* Removes right padding */
+        }
+
+        /* INPUT GROUP FOCUS 
+** Draws an outline 
+--------------------------------------- */
+        .outline {
+            /* pointer-events: none; /* Disable click */
+            cursor: pointer;
+        }
+
+        /* box around the input-group */
+        .outline::after {
+            content: '';
+            position: absolute;
+            z-index: -1;
+            top: 0;
+            left: 0;
+            width: calc(100% - 1px);
+            height: calc(100% - 1px);
+            border-radius: 2px;
+            /* Your style */
+            transition: box-shadow 0.3s ease;
+            /* Your style */
+        }
+
+        .input-group .textbox:hover+.outline::after {
+            box-shadow: 0px 0px 1px 2px rgba(0, 149, 255, 0.87);
+            /*   border: 1px solid dodgerblue; */
+        }
+
+        .input-group .textbox:focus+.outline::after {
+            box-shadow: 0px 0px 2px 4px rgba(0, 149, 255, 1);
         }
     </style>
 </head>
 
 <body>
-    <div id="tabContent">
-        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <div id="utility"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
             <g id="qrcode" />
         </svg>
+        <h2>Let colleages scan to access this page!</h2>
+        <div id="click">
+            <p>Show QR Code</p>
+        </div>
+    </div>
+    <div id="tabContent">
+
     </div>
     <div id="container">
         <h1>Mobile Station Finder</h1>
         <div id="searchFilter">
             <label for="search">Search:</label>
-            <input type="text" id="search" name="search">
+            <div class="input-group">
+                <span class="icon bg">
+                    <i class="fas fa-filter"></i>
+                </span>
+                <input type="text" id="search" name="search" class="textInput" placeholder="enter amazonid">
+                <span class="outline"></span>
+            </div>
             <label for="showAll">Show All:</label>
             <input type="checkbox" id="showAll" name="showAll">
         </div>
@@ -137,53 +342,81 @@
     </div>
     <script type="text/javascript">
 
-let fullStationList = "https://jsonblob.com/api/jsonBlob/1250140915040641024";
 
-                    fetch(fullStationList, {
-                        headers: {
-                            accept: "application/json",
-                            "accept-language": "en-GB",
-                            "cache-control": "no-cache"
-                        },
-                        method: "GET"
-                    })
-                        .then(function (response) {
-                            return response.json();
-                        })
-                        .then(function (json) {
-                            createTableFromArray(["AmazonID", "Station"], json.floors);
-                        })
+        document.addEventListener("DOMContentLoaded", (event) => {
+            u = document.getElementById('utility');
+            height = u.getBoundingClientRect().height;
+            document.getElementById('utility').style.setProperty('--calcHeight', height + 'px')
+            console.log("DOM fully loaded and parsed");
 
-                        function createTableFromArray(headers, id, data) {
-                            let table = document.createElement('table');
-                            let thead = document.createElement('thead');
-                            let tbody = document.createElement('tbody');
-                            let tr = document.createElement('tr');
-                            headers.forEach(header => {
-                                let th = document.createElement('th');
-                                th.textContent = header;
-                                th.addEventListener('click', function () {
-                                    sortTable(table, headers.indexOf(header));
-                                })
-                                tr.appendChild(th);
-                            })
-                            thead.appendChild(tr);
-                            table.appendChild(thead);
-                            data.forEach(row => {
-                                let tr = document.createElement('tr');
-                                headers.forEach(header => {
-                                    let td = document.createElement('td');
-                                    td.textContent = row[0];
-                                    tr.appendChild(td);
-                                })
-                                tbody.appendChild(tr);
-                            })
-                            table.appendChild(tbody);
-                            table.id = id;
-                            document.getElementById('container').appendChild(table);
-                        }
+
+
+            let fullStationList = "https://jsonblob.com/api/jsonBlob/1250140915040641024";
+
+            fetch(fullStationList, {
+                headers: {
+                    accept: "application/json",
+                    "accept-language": "en-GB",
+                    "cache-control": "no-cache"
+                },
+                method: "GET"
+            }).then(function (response) {
+                return response.json();
+            }).then(function (json) {
+                //document.getElementById('search').value = json.floors;
+                console.log(json);
+                createTableFromArray(["AmazonID", "Station"], 1, json);
+            }).catch(function (error) {
+                console.log(error);
+            });
+        });
+        document.getElementById("click").addEventListener("click", (e) => {
+            e.stopPropagation();
+            const u = document.getElementById("utility");
+            height = u.getBoundingClientRect().height;
+            u.style.marginTop = "0px";
+            u.style.gap = "2px";
+        });
+
+        document.getElementById("utility").addEventListener("click", (e) => {
+            const u = document.getElementById("utility");
+            height = u.getBoundingClientRect().height;
+            u.style.setProperty('margin-top', -height + 'px');
+            u.style.setProperty('gap', "20px");
+        });
+
+        function createTableFromArray(headers, id, da) {
+            console.log(da)
+            let table = document.createElement('table');
+            let thead = document.createElement('thead');
+            let tbody = document.createElement('tbody');
+            let tr = document.createElement('tr');
+            headers.forEach(header => {
+                let th = document.createElement('th');
+                th.textContent = header;
+                th.addEventListener('click', function () {
+                    sortTable(table, headers.indexOf(header));
+                })
+                tr.appendChild(th);
+            })
+            thead.appendChild(tr);
+            table.appendChild(thead);
+            da.floors.forEach(row => {
+                console.log(row)
+                let tr = document.createElement('tr');
+                headers.forEach(header => {
+                    let td = document.createElement('td');
+                    td.textContent = row;
+                    tr.appendChild(td);
+                })
+                tbody.appendChild(tr);
+               
+            }) 
+            table.appendChild(tbody);
+            table.id = id;
+            document.getElementById('container').appendChild(table);
+        }
         document.getElementById('forgotBadge').addEventListener('click', function () {
-            document.getElementById('badgeDisplay').style.display = 'block';
             document.getElementById('badgeDisplay').style.bottom = '0px';
         })
         var qrcode = new QRCode(document.getElementById("qrcode"), {
