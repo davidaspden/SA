@@ -35,6 +35,17 @@
                     <table id="dataTableF1"></table>
                     <button id="Decorate">Decorate</button>
                 </div>
+                <div id="distributionModel">
+
+                    <div id="stationLists">
+                        <div id="stationList1" class="stationListButton">
+                        </div>
+                        <div id="stationList2"  class="stationListButton">
+                        </div>
+                          <div id="stationList3"  class="stationListButton">
+                        </div>
+                          </div>
+                </div>
                 <div id="freeStationInfo"></div>
                 <pre id="jsonOutput"></pre>
                 <pre id="singleResultUrl">-----</pre>
@@ -226,6 +237,303 @@
                     }
                 });
                 sides = [p2N, p2W, p2S, p3N, p3W, p3S, p4N, p4W, p4S];
+                function Interleave(arrays) {
+  // Check if the input is an array of arrays
+  if (!Array.isArray(arrays) || !arrays.every(Array.isArray)) {
+    throw new Error("Input must be an array of arrays");
+  }
+
+  // Check if all arrays are of the same length
+  const length = arrays[0].length;
+  if (!arrays.every((arr) => arr.length === length)) {
+    throw new Error("All arrays must have the same length");
+  }
+
+  // Create the interleaved array
+  const result = [];
+  for (let i = 0; i < length; i++) {
+    for (let j = 0; j < arrays.length; j++) {
+      result.push(arrays[j][i]);
+    }
+  }
+
+  return result;
+}
+
+function nonequalInterleave(arrays) {
+  // Check if the input is an array of arrays
+  if (!Array.isArray(arrays) || !arrays.every(Array.isArray)) {
+    throw new Error("Input must be an array of arrays");
+  }
+  var arraysLengths = arrays.map((a) => {
+    return a.length;
+  });
+  var maxL = Math.max(...arraysLengths);
+  //include arrays in the interleave up until they run out of elements.
+
+  // Create the interleaved array
+  const result = [];
+  for (let i = 0; i < maxL; i++) {
+    for (let j = 0; j < arrays.length; j++) {
+      if (arraysLengths[j] > i) {
+        result.push(arrays[j][i]);
+      }
+    }
+  }
+
+  return result;
+}
+
+function drawDeployment() {
+  var i = 0;
+  // Define the URL
+  const url = "https://jsonblob.com/api/jsonBlob/1250140915040641024";
+
+  // Use the fetch function to retrieve data from the URL
+  fetch(url)
+    .then((response) => {
+      // Check if the response is ok (status code 200-299)
+      if (!response.ok) {
+        throw new Error("Network response was not ok " + response.statusText);
+      }
+      // Parse the JSON from the response
+      return response.json();
+    })
+    .then((data) => {
+      //split to floors
+      data.floors = data.floors.sort();
+      var p4 = data.floors.filter((e) => {
+        if (e.toString()[0] == 4) {
+          return e;
+        }
+      });
+      var p3 = data.floors.filter((e) => {
+        if (e.toString()[0] == 3) {
+          return e;
+        }
+      });
+
+      var p2 = data.floors.filter((e) => {
+        if (e.toString()[0] == 2) {
+          return e;
+        }
+      });
+      //split to sides
+      var p4N = [
+        ...p4.filter((e) => {
+          if (e.toString()[1] == 1) {
+            return e;
+          }
+        })
+      ].reverse();
+      var p4W = p4.filter((e) => {
+        if (e.toString()[1] == 2) {
+          return e;
+        }
+      });
+      var p4S = p4.filter((e) => {
+        if (e.toString()[1] == 3) {
+          return e;
+        }
+      });
+
+      var p3N = [
+        ...p3.filter((e) => {
+          if (e.toString()[1] == 1) {
+            return e;
+          }
+        })
+      ].reverse();
+      var p3W = p3.filter((e) => {
+        if (e.toString()[1] == 2) {
+          return e;
+        }
+      });
+      var p3S = p3.filter((e) => {
+        if (e.toString()[1] == 3) {
+          return e;
+        }
+      });
+
+      var p2N = [
+        ...p2.filter((e) => {
+          if (e.toString()[1] == 1) {
+            return e;
+          }
+        })
+      ].reverse();
+      var p2W = p2.filter((e) => {
+        if (e.toString()[1] == 2) {
+          return e;
+        }
+      });
+      var p2S = p2.filter((e) => {
+        if (e.toString()[1] == 3) {
+          return e;
+        }
+      });
+      sides = [p2N, p2W, p2S, p3N, p3W, p3S, p4N, p4W, p4S];
+      deployment1 = [
+        ...nonequalInterleave([p2W, p3W, p4W]),
+        ...nonequalInterleave([p2N, p2S]),
+        ...nonequalInterleave([p3N, p3S]),
+        ...nonequalInterleave([p4N, p4S])
+      ];
+      deployment2 = [
+        ...nonequalInterleave([p2W, p3W, p4W]),
+        ...nonequalInterleave([p2N, p3N, p4N]),
+        ...nonequalInterleave([p2S, p3S, p4S])
+      ];
+      deployment = [
+        ...p2W,
+        ...nonequalInterleave([p2N, p2S]),
+        ...p3W,
+        ...nonequalInterleave([p3N, p3S]),
+        ...p4W,
+        ...nonequalInterleave([p4N, p4S])
+      ];
+      sides.forEach((side) => {
+        var g = document.getElementById("stationList1");
+        var si = document.createElement("div");
+        si.classList.add("side");
+        side.forEach((s) => {
+          b = document.createElement("div");
+          b.innerHTML = s;
+          b.setAttribute("data", s);
+          b.setAttribute("class", "station");
+          b.setAttribute("id", g.id + "-station" + s);
+          si.appendChild(b);
+        });
+        g.appendChild(si);
+        g.addEventListener("click", () => {
+          if (g.classList.contains("names")) {
+            g.classList.remove("names");
+          } else {
+            g.classList.add("names");
+          }
+        });
+        g.addEventListener("mouseenter", () => {
+          let m = setInterval(() => {
+            if (i < deployment.length) {
+              document
+                .getElementById(g.id + "-station" + deployment1[i])
+                .classList.add("taken");
+              i++;
+            } else {
+              clearInterval(m);
+              i = 0;
+            }
+          }, 150);
+          g.addEventListener("mouseleave", () => {
+            i = 0;
+            clearInterval(m);
+            for (let i = 0; i < deployment.length; i++) {
+              document
+                .getElementById(g.id + "-station" + deployment1[i])
+                .classList.remove("taken");
+            }
+          });
+        });
+      });
+      sides.forEach((side) => {
+        var g = document.getElementById("stationList2");
+        var si = document.createElement("div");
+        si.classList.add("side");
+        side.forEach((s) => {
+          b = document.createElement("div");
+          b.innerHTML = s;
+          b.setAttribute("data", s);
+          b.setAttribute("class", "station");
+          b.setAttribute("id", g.id + "-station" + s);
+          si.appendChild(b);
+        });
+        g.appendChild(si);
+        g.addEventListener("click", showNames);
+        g.addEventListener("mouseenter", () => {
+          let r = setInterval(() => {
+            if (i < deployment.length) {
+              document
+                .getElementById(g.id + "-station" + deployment[i])
+                .classList.add("taken");
+              i++;
+            } else {
+              clearInterval(r);
+              i = 0;
+            }
+          }, 150);
+          g.addEventListener("mouseleave", () => {
+            i = 0;
+            clearInterval(r);
+            for (let i = 0; i < deployment.length; i++) {
+              document
+                .getElementById(g.id + "-station" + deployment[i])
+                .classList.remove("taken");
+            }
+          });
+        });
+      });
+      sides.forEach((side) => {
+        var g = document.getElementById("stationList3");
+        var si = document.createElement("div");
+        si.classList.add("side");
+        side.forEach((s) => {
+          b = document.createElement("div");
+          b.innerHTML = s;
+          b.setAttribute("data", s);
+          b.setAttribute("class", "station");
+          b.setAttribute("id", g.id + "-station" + s);
+          si.appendChild(b);
+        });
+        g.appendChild(si);
+        g.addEventListener("click", showNames);
+        g.addEventListener("mouseenter", () => {
+          let r = setInterval(() => {
+            if (i < deployment.length) {
+              document
+                .getElementById(g.id + "-station" + deployment2[i])
+                .classList.add("taken");
+              i++;
+            } else {
+              clearInterval(r);
+              i = 0;
+            }
+          }, 150);
+          g.addEventListener("mouseleave", () => {
+            i = 0;
+            clearInterval(r);
+            for (let i = 0; i < deployment.length; i++) {
+              document
+                .getElementById(g.id + "-station" + deployment2[i])
+                .classList.remove("taken");
+            }
+          });
+        });
+      });
+    })
+    .catch((error) => {
+      // Log any errors to the console
+      console.error(
+        "There has been a problem with your fetch operation:",
+        error
+      );
+    });
+}
+function showNames() {
+  document.querySelectorAll(".stationListButton").forEach((g) => {
+    if (g != this) {
+      if (g.classList.contains("names")) {
+        g.classList.remove("names");
+      }
+    }
+  });
+  if (this.classList.contains("names")) {
+    this.classList.remove("names");
+  } else {
+    this.classList.add("names");
+  }
+}
+drawDeployment();
+
             }); //End of fetch  
 
 
@@ -384,7 +692,8 @@
                 }
 
                 function addRowToTable(fields) {
-                    const table = document.getElementById('dataTableF1')
+                table = document.getElementById('dataTableF1');
+                   console.log(table);
                     if (!table.getElementsByTagName('tbody')[0]) {
                         tableBody = table.appendChild(document.createElement('tbody'));
                         const row = document.createElement('tr');

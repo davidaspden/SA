@@ -351,3 +351,73 @@ input {
   padding: 2px;
   background-color: lightblue;
 }
+
+.station {
+  box-sizing: border-box;
+  border: 1px solid red;
+}
+
+
+
+
+#stationLists {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%;
+  height: 100%;
+  gap: 4px;
+  align-content: flex-start;
+  justify-content: space-evenly;
+  transition: all 0.3s linear;
+  flex-grow: 3;
+}
+
+.side {
+  border-right: 2px solid blue;
+}
+.names {
+  height: 420px !important;
+  width: 350px;
+  font-size: .8rem;
+}
+
+.stationListButton {
+  box-sizing: border-box;
+  padding: 5px;
+  border: 4px solid green;
+  transition: transform 0.2s linear;
+  padding:2px;
+  display: flex;
+  align-content: left;
+  flex-direction: row;
+  gap:2px;
+  overflow: hidden;
+  container-type: size;
+  container-name: stations;
+  height: 56px;
+  min-width: 90px;
+}
+.stationListButton:hover {
+  box-shadow: 4px 4px 5px red;
+  transform: scale(1);
+  overflow: visible;
+  min-height: 50px;
+}
+
+.taken {
+  background-color: red;
+  color: white;
+}
+
+@container stations (height <45px) {
+  .stationListButton .side .station {
+    font-size: 0;
+    min-height: 2px;
+    min-width:2px;
+    width: 5px;
+    border: 0px;
+  }
+
+}
