@@ -85,7 +85,7 @@
             });
         }
 
-        //Get the station list from JSONblob
+        //Generic put Function
         async function putJsonState(url, data) {
             try {
                 const response = await fetch(url, {
@@ -137,544 +137,657 @@
 
         //Populate the Data
         // Get Stations
-        fetchJsonObject('https://jsonblob.com/api/jsonBlob/1246528442869866496').then((data) => {
-            stations = data.floor1.stations;
-            createCountElement("stations", countStations);
+        //Real stations: https://jsonblob.com/1250140915040641024
+        //fake demo: https://jsonblob.com/1246528442869866496
+        const demoUrl = "https://jsonblob.com/api/jsonBlob/1246528442869866496"
+        const stationsUrl = "https://jsonblob.com/api/jsonBlob/1250140915040641024";
 
-            //Get Staff
-            fetchJsonObject('https://jsonblob.com/api/jsonBlob/1246532986249011200').then((data) => {
-                staff = [];
-                //Send to the manual edit box. Functionality to edit names comes later.
-                document.getElementById("namesList").value = data.names.toString();
-                availableStaff.push(...data.names);
-                if (stations.length < data.names.length) {
-                    for (let i = 0; i < data.names.length - stations.length; i++) {
-                        addRowToUA([data.names.slice(stations.length, data.names.length)[i], '---']);
+        // Use the fetch function to retrieve data from the URL
+        fetch(stationsUrl)
+            .then((response) => {
+                // Check if the response is ok (status code 200-299)
+                if (!response.ok) {
+                    throw new Error("Network response was not ok " + response.statusText);
+                }
+                // Parse the JSON from the response
+                return response.json();
+            })
+            .then((data) => {
+                //split to floors
+                data.floors = data.floors.sort();
+                var p4 = data.floors.filter((e) => {
+                    if (e.toString()[0] == 4) {
+                        return e;
                     }
-
-                    data.names.splice(stations.length, data.names.length - stations.length);
-
-                }
-                while (data.names.length > 0) {
-                    staff.push(data.names.splice(getRandomNumber(data.names.length), 1)[0]);
-                }
-                createCountElement("Staff", countStaff);
-                originalData = transposeArray([staff, stations]);
-                originalData.map(addRowToTable);
-
-                createPreCountedElement("Floor Status", printFloorStatus(getFloorCountsObj(transposeArray(originalData)[1], [1, 2])));
-                const ev = new CustomEvent('originalDataChanged', { bubbles: false, detail: { when: Date().toString() } });
-                document.dispatchEvent(ev);
-
-            });
-        });
-
-        document.addEventListener('originalDataChanged', (e) => {
-            document.getElementById("jsonOutput").innerText = objectToJson(originalData);
-        });
-
-        //Listen for filters
-        document.getElementById('filterInput').addEventListener('input', function () {
-            filterTable(this.value);
-        });
-
-        //Listen for clicks to sort the table.
-        document.getElementById('dataTableF1').addEventListener('click', function (event) {
-            if (event.target.tagName.toLowerCase() == 'th' && event.target.innerHTML == "amazonid") {
-                const table = document.getElementById('dataTableF1');
-                const tableBody = table.getElementsByTagName('tbody')[0];
-                const th = table.rows[0];
-                tableBody.innerHTML = '';
-                tableBody.appendChild(th);
-                originalData.sort();
-
-                originalData.forEach(fields => {
-                    addRowToTable(fields);
                 });
-            }
-            if (event.target.tagName.toLowerCase() == 'th' && event.target.innerHTML == "Station") {
-                const table = document.getElementById('dataTableF1');
-                const tableBody = table.getElementsByTagName('tbody')[0];
-                const th = table.rows[0];
-                tableBody.innerHTML = '';
-                tableBody.appendChild(th);
-                originalData.sort(compareSecondColumn);
-
-
-
-                originalData.forEach(fields => {
-                    addRowToTable(fields);
+                var p3 = data.floors.filter((e) => {
+                    if (e.toString()[0] == 3) {
+                        return e;
+                    }
                 });
-            }
-        });
 
-        function compareSecondColumn(a, b) {
-            if (a[1] === b[1]) {
-                return 0;
-            }
-            else {
-                return (a[1] < b[1]) ? -1 : 1;
-            }
-        }
+                var p2 = data.floors.filter((e) => {
+                    if (e.toString()[0] == 2) {
+                        return e;
+                    }
+                });
+                //split to sides
+                var p4N = [
+                    ...p4.filter((e) => {
+                        if (e.toString()[1] == 1) {
+                            return e;
+                        }
+                    })
+                ].reverse();
+                var p4W = p4.filter((e) => {
+                    if (e.toString()[1] == 2) {
+                        return e;
+                    }
+                });
+                var p4S = p4.filter((e) => {
+                    if (e.toString()[1] == 3) {
+                        return e;
+                    }
+                });
 
-        document.getElementById('singleResultUrl').addEventListener('click', function () {
-            copyContent(document.getElementById('singleResultUrl').innerText)
-        });
+                var p3N = [
+                    ...p3.filter((e) => {
+                        if (e.toString()[1] == 1) {
+                            return e;
+                        }
+                    })
+                ].reverse();
+                var p3W = p3.filter((e) => {
+                    if (e.toString()[1] == 2) {
+                        return e;
+                    }
+                });
+                var p3S = p3.filter((e) => {
+                    if (e.toString()[1] == 3) {
+                        return e;
+                    }
+                });
 
-        //Listen for the save button being pressed.
-        document.getElementById('saveButton').addEventListener('click', () => {
-            putJsonState('https://jsonblob.com/api/jsonBlob/1249339120978616320', 'test4')
-            c = document.createElement("div");
-            c.setAttribute("id", 'Last Saved')
-            c.innerHTML = "Last Saved: " + Date(Date.now()).toString();
-            document.getElementById("status").appendChild(c)
-        })
-
-
-        //Array transposing utility
-        function transposeArray(array) {
-            var newArray = [];
-            for (var i = 0; i < array[0].length; i++) {
-                newArray.push([]);
-            };
-
-            for (var i = 0; i < array.length; i++) {
-                for (var j = 0; j < array[0].length; j++) {
-                    newArray[j].push(array[i][j]);
-                };
-            };
-
-            return newArray;
-        }
-
-        //Function to count based upon a filter
-        function getFloorCount(originalData, floor) {
-            return originalData.reduce((a, c) => { return c.toString()[0] == floor.toString() ? a + 1 : a },)
-        }
-        //Function Count Stations by floor
-        //takes some floor data, then an array of floors
-        function getFloorCountsObj(originalData, floorsToCount) {
-            // Initialize an object with floorsToCount as keys and 0 as their initial count
-            const floorCountMap = floorsToCount.reduce((acc, floor) => {
-                acc[floor] = 0;
-                return acc;
-            }, {});
-
-            // Iterate over the original data to count occurrences
-            originalData.forEach(number => {
-                const firstDigit = number.toString()[0];
-                if (floorCountMap.hasOwnProperty(firstDigit)) {
-                    floorCountMap[firstDigit]++;
-                }
-            });
-            return floorCountMap;
-        }
-
-        //Pretty Print The Floor Count Obj
-        //Takes a counted floor object.
-        function printFloorStatus(fcObj) {
-            return Object.entries(fcObj)
-                .map(([key, value]) => `Floor ${key}:${value}`)
-                .join(' | ');
-        }
-
-        //Functionality to parse a saved file
-        function parseFile(contents) {
-            const tableBody = document.getElementById('dataTableF1').getElementsByTagName('tbody')[0];
-            tableBody.innerHTML = '';  // Clear any existing rows
-
-            const lines = contents.split('\n');
-            originalData = lines.map(line => line.split(',').map(field => field.trim()));
-
-            originalData.forEach(fields => {
-                addRowToTable(fields);
-            });
-        }
-
-        function addRowToTable(fields) {
-            const table = document.getElementById('dataTableF1')
-            if (!table.getElementsByTagName('tbody')[0]) {
-                tableBody = table.appendChild(document.createElement('tbody'));
-                const row = document.createElement('tr');
-                span = document.createElement('th');
-                span.setAttribute('rowspan', 11)
-                span.setAttribute('id', 'span1');
-                span.innerText = 'Floor 1';
-                row.appendChild(span);
-                th1 = document.createElement('th');
-                th1.innerText = 'amazonid';
-                th1.setAttribute('id', 'amazonid');
-                row.appendChild(th1);
-                th2 = document.createElement('th');
-                th2.innerText = 'Station';
-                th2.setAttribute('id', 'station')
-                row.appendChild(th2);
-                row.appendChild(th2);
-                tableBody.appendChild(row);
-            }
-            else {
-                tableBody = table.getElementsByTagName('tbody')[0]
-            }
-            const row = document.createElement('tr');
-
-            for (let i = 0; i < fields.length; i++) {
-                const cell = document.createElement('td');
-                cell.textContent = fields[i] ? fields[i] : '';  // Handle missing fields
-                if (i == 0) {
-                    cell.setAttribute('class', 'movable');
-                }
-                else {
-                    cell.setAttribute('class', 'editable');
-                }
-                row.appendChild(cell);
-            }
-            tableBody.appendChild(row);
-        }
+                var p2N = [
+                    ...p2.filter((e) => {
+                        if (e.toString()[1] == 1) {
+                            return e;
+                        }
+                    })
+                ].reverse();
+                var p2W = p2.filter((e) => {
+                    if (e.toString()[1] == 2) {
+                        return e;
+                    }
+                });
+                var p2S = p2.filter((e) => {
+                    if (e.toString()[1] == 3) {
+                        return e;
+                    }
+                });
+                sides = [p2N, p2W, p2S, p3N, p3W, p3S, p4N, p4W, p4S];
+            }); //End of fetch  
 
 
-        //Utility to stringify JSON
-        function objectToJson(obj) {
-            try {
-                return JSON.stringify(obj);
-            } catch (error) {
-                console.error('Error converting object to JSON:', error);
-                return null;
-            }
-        }
-        //Utility to get a Random Number
-        function getRandomNumber(n) {
-            if (n <= 0) {
-                throw new Error("n must be a positive integer");
-            }
-            return Math.floor(Math.random() * n);
-        }
+                fetchJsonObject(demoUrl).then((data) => {
+                    stations = data.floor1.stations;
+                    createCountElement("stations", countStations);
 
-        //Filtering Logic
-        function filterTable(query) {
-            const table = document.getElementById('dataTableF1');
-            const tableBody = table.getElementsByTagName('tbody')[0];
-            const th = table.rows[0];
-            tableBody.innerHTML = '';
-            tableBody.appendChild(th);  // Clear current table
+                    //Get Staff
+                    fetchJsonObject('https://jsonblob.com/api/jsonBlob/1246532986249011200').then((data) => {
+                        staff = [];
+                        //Send to the manual edit box. Functionality to edit names comes later.
+                        document.getElementById("namesList").value = data.names.toString();
+                        availableStaff.push(...data.names);
+                        if (stations.length < data.names.length) {
+                            for (let i = 0; i < data.names.length - stations.length; i++) {
+                                addRowToUA([data.names.slice(stations.length, data.names.length)[i], '---']);
+                            }
 
-            const filteredData = originalData.filter(fields => fields[0] && fields[0].startsWith(query));
-            filteredData.forEach(fields => {
-                console.log('adding filtered fields')
-                addRowToTable(fields);
-            });
+                            data.names.splice(stations.length, data.names.length - stations.length);
 
-            if (filteredData.length === 1) {
-                const url = `${window.location.origin}${window.location.pathname}?Amazonid=${filteredData[0][0]}`;
-                document.getElementById('singleResultUrl').textContent = url;
-                document.getElementById('singleResultUrl').style.display = 'inline-block';
-            } else {
-                document.getElementById('singleResultUrl').style.display = 'none';
-            }
-        }
+                        }
+                        while (data.names.length > 0) {
+                            staff.push(data.names.splice(getRandomNumber(data.names.length), 1)[0]);
+                        }
+                        createCountElement("Staff", countStaff);
+                        originalData = transposeArray([staff, stations]);
+                        originalData.map(addRowToTable);
 
-        //Apply filter in case of a URL
-        function applyInitialFilter() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const initialFilter = urlParams.get('Field1');
-            if (initialFilter) {
-                document.getElementById('filterInput').value = initialFilter;
-                filterTable(initialFilter);
-            }
-        }
-        //Find what stations are empty
-        function findEmptyStations(assigned, all) {
-            let emptyStations = [];
-            all.map((station) => { if (!assigned.includes(station)) { emptyStations.push(station) } });
-            const ev = new CustomEvent('freestationsChanged', { bubbles: false, detail: { emptyStations: emptyStations } });
-            document.dispatchEvent(ev);
-        }
-
-        document.addEventListener('originalDataChanged', (e) => {
-            ne = originalData.filter((o) => { return !freeStations.includes(o[1]) });
-            originalData = ne;
-        });
-
-        document.addEventListener('freestationsChanged', (e) => {
-            freeStations = e.detail.emptyStations;
-            document.querySelector('#freeStationInfo').innerHTML = 'There are these free stations: ' + divFromArray(freeStations).outerHTML;
-            const ev = new CustomEvent('originalDataChanged', { bubbles: false, detail: { when: Date().toString() } });
-            document.dispatchEvent(ev);
-        })
-
-        function divFromArray(data, id = "newDiv") {
-            let s = document.createElement("div");
-            s.setAttribute("id", id);
-            let inner = '';
-            data.map((d) => {
-                c = document.createElement("div");
-                c.setAttribute("id", 'free-' + d);
-                c.setAttribute("class", 'free');
-                c.innerHTML = d;
-                s.appendChild(c);
-            });
-            return s
-        }
-
-        //Event Listener to initiate Table decoration
-        document.addEventListener('DOMContentLoaded', () => {
-            decorateTable(document.querySelector('#dataTableF1'))
-            //Add a button to open or close the auto assign feature
-            document.getElementById('autoAssign').addEventListener('click', () => {
-                if (document.getElementById('autoAssign').innerText == 'Close AutoAssign') {
-                    putJsonState("https://jsonblob.com/api/Jsonblob/1250688408748941312", {
-                        "status": "Closed",
-                        "lastChanged": new Date().toString()
-                    }).then(() => {
-                        document.getElementById('autoAssign').innerText = 'Open AutoAssign';
-                    }).catch((error) => {
-                        console.log(error);
-                    });
-                }
-                if (document.getElementById('autoAssign').innerText == 'Open AutoAssign') {
-                    putJsonState("https://jsonblob.com/api/Jsonblob/1250688408748941312", {
-                        "status": "Open",
-                        "lastChanged": new Date().toString()
-                    }).then(() => {
-                        document.getElementById('autoAssign').innerText = 'Close AutoAssign';
-                    }).catch((error) => {
-                        console.log(error);
-                    });
-                }
-
-            });
-        });
-        //Table Decoration logic - adding utility
-        function decorateTable(table) {
-            table.addEventListener('click', (event) => {
-                const cell = event.target;
-                if (cell.classList.contains('movable') && !cell.querySelector('button')) {
-                    const originalText = cell.innerText;
-                    const input = document.createElement('input');
-                    input.type = 'button';
-                    input.value = originalText;
-                    input.style.width = `${cell.offsetWidth}px`;
-
-                    cell.innerHTML = '';
-                    cell.appendChild(input);
-
-                    input.addEventListener('click', (e) => {
-                        assignToLabourShare(e.target.value);
-                        cell.parentNode.remove()
-                        //Todo Trigger a changedEvent
+                        createPreCountedElement("Floor Status", printFloorStatus(getFloorCountsObj(transposeArray(originalData)[1], [1, 2])));
                         const ev = new CustomEvent('originalDataChanged', { bubbles: false, detail: { when: Date().toString() } });
                         document.dispatchEvent(ev);
-                    })
-                }
-                if (cell.classList.contains('editable') && !cell.querySelector('input')) {
-                    const originalText = cell.innerText;
-                    const input = document.createElement('input');
-                    input.type = 'text';
-                    input.value = originalText;
-                    input.style.width = `${cell.offsetWidth}px`;
 
-                    cell.innerHTML = '';
-                    cell.appendChild(input);
-                    input.focus();
-                    //Suggester System
-                    input.addEventListener("keyup", (e) => {
-                        
-                        if (e.target.value.length >= 2) {
-                            input.parentElement.appendChild(createSuggestion(["---1", "---2"], e.target, input.parentElement));
-                        }
                     });
-
-                    input.addEventListener('keydown', (event) => {
-                        if (event.key === 'Escape') {
-                            cell.innerHTML = originalText;
-                        }
-                        if (event.key === 'Enter') {
-                            if (input.value == '') {
-                                //addToUnassigned
-                                document.querySelector('#unassigned').appendChild(cell.parentNode)
-                                //Recalculate Free Stations.
-                                let inuse = [];
-                                for (let i = 1; i < table.rows.length; i++) {
-                                    inuse.push(+table.rows[i].cells[1].innerHTML);
-                                }
-                                findEmptyStations(inuse, stations);
-                            }
-                            cell.innerHTML = input.value;
-                        }
-                    });
-                    input.addEventListener('blur', () => {
-                        //cell.innerHTML = originalText;
-                    });
-                }
-            });
-        }
-
-        function countStations() {
-            return stations.length;
-        }
-
-        function countStaff() {
-            return availableStaff.length;
-        }
-
-        function createCountElement(name, count) {
-            c = document.createElement("div");
-            c.setAttribute("id", name.replace(/\s+/g, ''))
-            c.innerHTML = name + " Count: " + count();
-            document.getElementById("status").appendChild(c)
-        }
-
-        function createPreCountedElement(name, precount) {
-            c = document.createElement("div");
-            id = name.replace(/\s+/g, '');
-            c.setAttribute("id", id);
-            c.innerHTML = name + ": " + precount;
-            document.getElementById("status").appendChild(c)
-        }
-
-        //This needs more work, currently updates UI not state.
-        function assignToLabourShare(userid) {
-            labourShare.push([userid, Date().toString()]);
-            //We now should fire an event saying labourShare has changed.
-            const ev = new CustomEvent('newLabourShare', { bubbles: false, detail: { assignee: [userid, Date().toString()] } });
-            document.querySelector('#labourShareTable').dispatchEvent(ev);
-        }
-        document.querySelector('#labourShareTable').addEventListener('newLabourShare', (e) => {
-            addRowToLS(e.detail.assignee);
-        }, true)
-
-        //Add a row to the Labour Share
-        function addRowToLS(fields) {
-            console.log(fields);
-            const table = document.getElementById('labourShareTable');
-            if (!table.getElementsByTagName('tbody')[0]) {
-                addTableHeaders(table, ['amazonid', 'time']);
-            }
-            const tableBody = table.getElementsByTagName('tbody')[0]
-            const row = document.createElement('tr');
-            for (let i = 0; i <= fields.length; i++) {
-                const cell = document.createElement('td');
-                cell.textContent = fields[i] ? fields[i] : '';  // Handle missing fields
-                cell.setAttribute('class', 'editable')
-                row.appendChild(cell);
-            }
-            tableBody.appendChild(row);
-        }
-        function dec(table) {
-
-            for (i = 1; i < table.rows.length; i++) {
-                td = document.createElement("td");
-                td.setAttribute("data-func", "dec");
-                td.appendChild(createLSButton());
-                table.rows[i].appendChild(td);
-            }
-        }
-
-        function createLSButton() {
-            b = document.createElement("button");
-            b.setAttribute("value", "Labour Share");
-            b.innerText = "Labour Share";
-            b.addEventListener("click", (e) => {
-                row = e.target.closest("tr");
-                rowData = row.getAttribute("data-row");
-                console.log(rowData);
-                rowData = JSON.parse(rowData);
-                inp = document.createElement("input");
-                inp.value = rowData.S1;
-                e.target.parentNode.appendChild(inp);
-            });
-            return b;
-        }
-
-        //Add a row to the unassigned table
-        function addRowToUA(fields) {
-            const table = document.getElementById('unassigned')
-            if (!table.getElementsByTagName('tbody')[0]) {
-                addTableHeaders(table, ['amazonid', 'new station']);
-            }
-            tableBody = table.getElementsByTagName('tbody')[0]
-            const row = document.createElement('tr');
-            for (let i = 0; i <= fields[0].length; i++) {
-                const cell = document.createElement('td');
-                cell.textContent = fields[i] ? fields[i] : '';  // Handle missing fields
-                cell.setAttribute('class', 'editable')
-                row.appendChild(cell);
-            }
-            tableBody.appendChild(row);
-            decorateTable(table);
-        }
-
-        function addRowToSD(fields) {
-            const table = document.getElementById('standDown')
-            if (!table.getElementsByTagName('tbody')[0]) {
-                addTableHeaders(table, ['amazonid', 'time']);
-            }
-            tableBody = table.getElementsByTagName('tbody')[0]
-            for (let i = 0; i < fields.length; i++) {
-                const cell = document.createElement('td');
-                cell.textContent = fields[i] ? fields[i] : '';  // Handle missing fields
-                cell.setAttribute('class', 'editable')
-                row.appendChild(cell);
-            }
-            tableBody.appendChild(row);
-        }
-        //Refactored making table headers.
-        function addTableHeaders(table, headers) {
-            if (!table.getElementsByTagName('tbody')[0]) {
-                tableBody = table.appendChild(document.createElement('tbody'));
-
-                const row = document.createElement('tr');
-                for (let i = 0; i < headers.length; i++) {
-                    th1 = document.createElement('th');
-                    th1.innerText = headers[i];
-                    th1.setAttribute('id', headers[i]);
-                    row.appendChild(th1);
-                }
-                tableBody.appendChild(row);
-            }
-        }
-
-
-
-
-
-        function createSuggestion(arr, input, target) {
-            if (!document.getElementById("suggestion")) {
-                u = document.createElement("ul");
-                u.setAttribute("id", "suggestion");
-            } else {
-                u = document.getElementById("suggestion");
-                u.innerHTML = "";
-            }
-            ar = arr.filter((item) => {
-                return item.startsWith(input.value);
-            });
-            ar.forEach((i) => {
-                li = document.createElement("li");
-                li.textContent = i;
-                li.addEventListener("click", () => {
-                    input.value = i;
-                    u.remove();
                 });
-                u.appendChild(li);
-            });
-            return u;
-        }
 
-        function fs() {
-            document.getElementById("test").addEventListener("keyup", (e) => {
-                if (e.target.value.length >= 1) {
-                    document.body.appendChild(
-                        createSuggestion(floors, document.getElementById("test"))
-                    );
-                }
-            });
-            document.getElementById("test").addEventListener("blur", (e) => {
-                if (e.target.value.length < 1) {
-                    document.getElementById("suggestion").remove();
-                }
-            });
-        }
+                document.addEventListener('originalDataChanged', (e) => {
+                    document.getElementById("jsonOutput").innerText = objectToJson(originalData);
+                });
 
-        window.onload = applyInitialFilter;
+                //Listen for filters
+                document.getElementById('filterInput').addEventListener('input', function () {
+                    filterTable(this.value);
+                });
+
+                //Listen for clicks to sort the table.
+                document.getElementById('dataTableF1').addEventListener('click', function (event) {
+                    if (event.target.tagName.toLowerCase() == 'th' && event.target.innerHTML == "amazonid") {
+                        const table = document.getElementById('dataTableF1');
+                        const tableBody = table.getElementsByTagName('tbody')[0];
+                        const th = table.rows[0];
+                        tableBody.innerHTML = '';
+                        tableBody.appendChild(th);
+                        originalData.sort();
+
+                        originalData.forEach(fields => {
+                            addRowToTable(fields);
+                        });
+                    }
+                    if (event.target.tagName.toLowerCase() == 'th' && event.target.innerHTML == "Station") {
+                        const table = document.getElementById('dataTableF1');
+                        const tableBody = table.getElementsByTagName('tbody')[0];
+                        const th = table.rows[0];
+                        tableBody.innerHTML = '';
+                        tableBody.appendChild(th);
+                        originalData.sort(compareSecondColumn);
+
+
+
+                        originalData.forEach(fields => {
+                            addRowToTable(fields);
+                        });
+                    }
+                });
+
+                function compareSecondColumn(a, b) {
+                    if (a[1] === b[1]) {
+                        return 0;
+                    }
+                    else {
+                        return (a[1] < b[1]) ? -1 : 1;
+                    }
+                }
+
+                document.getElementById('singleResultUrl').addEventListener('click', function () {
+                    copyContent(document.getElementById('singleResultUrl').innerText)
+                });
+
+                //Listen for the save button being pressed.
+                document.getElementById('saveButton').addEventListener('click', () => {
+                    putJsonState('https://jsonblob.com/api/jsonBlob/1249339120978616320', 'test4')
+                    c = document.createElement("div");
+                    c.setAttribute("id", 'Last Saved')
+                    c.innerHTML = "Last Saved: " + Date(Date.now()).toString();
+                    document.getElementById("status").appendChild(c)
+                })
+
+
+                //Array transposing utility
+                function transposeArray(array) {
+                    var newArray = [];
+                    for (var i = 0; i < array[0].length; i++) {
+                        newArray.push([]);
+                    };
+
+                    for (var i = 0; i < array.length; i++) {
+                        for (var j = 0; j < array[0].length; j++) {
+                            newArray[j].push(array[i][j]);
+                        };
+                    };
+
+                    return newArray;
+                }
+
+                //Function to count based upon a filter
+                function getFloorCount(originalData, floor) {
+                    return originalData.reduce((a, c) => { return c.toString()[0] == floor.toString() ? a + 1 : a },)
+                }
+                //Function Count Stations by floor
+                //takes some floor data, then an array of floors
+                function getFloorCountsObj(originalData, floorsToCount) {
+                    // Initialize an object with floorsToCount as keys and 0 as their initial count
+                    const floorCountMap = floorsToCount.reduce((acc, floor) => {
+                        acc[floor] = 0;
+                        return acc;
+                    }, {});
+
+                    // Iterate over the original data to count occurrences
+                    originalData.forEach(number => {
+                        const firstDigit = number.toString()[0];
+                        if (floorCountMap.hasOwnProperty(firstDigit)) {
+                            floorCountMap[firstDigit]++;
+                        }
+                    });
+                    return floorCountMap;
+                }
+
+                //Pretty Print The Floor Count Obj
+                //Takes a counted floor object.
+                function printFloorStatus(fcObj) {
+                    return Object.entries(fcObj)
+                        .map(([key, value]) => `Floor ${key}:${value}`)
+                        .join(' | ');
+                }
+
+                //Functionality to parse a saved file
+                function parseFile(contents) {
+                    const tableBody = document.getElementById('dataTableF1').getElementsByTagName('tbody')[0];
+                    tableBody.innerHTML = '';  // Clear any existing rows
+
+                    const lines = contents.split('\n');
+                    originalData = lines.map(line => line.split(',').map(field => field.trim()));
+
+                    originalData.forEach(fields => {
+                        addRowToTable(fields);
+                    });
+                }
+
+                function addRowToTable(fields) {
+                    const table = document.getElementById('dataTableF1')
+                    if (!table.getElementsByTagName('tbody')[0]) {
+                        tableBody = table.appendChild(document.createElement('tbody'));
+                        const row = document.createElement('tr');
+                        span = document.createElement('th');
+                        span.setAttribute('rowspan', 11)
+                        span.setAttribute('id', 'span1');
+                        span.innerText = 'Floor 1';
+                        row.appendChild(span);
+                        th1 = document.createElement('th');
+                        th1.innerText = 'amazonid';
+                        th1.setAttribute('id', 'amazonid');
+                        row.appendChild(th1);
+                        th2 = document.createElement('th');
+                        th2.innerText = 'Station';
+                        th2.setAttribute('id', 'station')
+                        row.appendChild(th2);
+                        row.appendChild(th2);
+                        tableBody.appendChild(row);
+                    }
+                    else {
+                        tableBody = table.getElementsByTagName('tbody')[0]
+                    }
+                    const row = document.createElement('tr');
+
+                    for (let i = 0; i < fields.length; i++) {
+                        const cell = document.createElement('td');
+                        cell.textContent = fields[i] ? fields[i] : '';  // Handle missing fields
+                        if (i == 0) {
+                            cell.setAttribute('class', 'movable');
+                        }
+                        else {
+                            cell.setAttribute('class', 'editable');
+                        }
+                        row.appendChild(cell);
+                    }
+                    tableBody.appendChild(row);
+                }
+
+
+                //Utility to stringify JSON
+                function objectToJson(obj) {
+                    try {
+                        return JSON.stringify(obj);
+                    } catch (error) {
+                        console.error('Error converting object to JSON:', error);
+                        return null;
+                    }
+                }
+                //Utility to get a Random Number
+                function getRandomNumber(n) {
+                    if (n <= 0) {
+                        throw new Error("n must be a positive integer");
+                    }
+                    return Math.floor(Math.random() * n);
+                }
+
+                //Filtering Logic
+                function filterTable(query) {
+                    const table = document.getElementById('dataTableF1');
+                    const tableBody = table.getElementsByTagName('tbody')[0];
+                    const th = table.rows[0];
+                    tableBody.innerHTML = '';
+                    tableBody.appendChild(th);  // Clear current table
+
+                    const filteredData = originalData.filter(fields => fields[0] && fields[0].startsWith(query));
+                    filteredData.forEach(fields => {
+                        console.log('adding filtered fields')
+                        addRowToTable(fields);
+                    });
+
+                    if (filteredData.length === 1) {
+                        const url = `${window.location.origin}${window.location.pathname}?Amazonid=${filteredData[0][0]}`;
+                        document.getElementById('singleResultUrl').textContent = url;
+                        document.getElementById('singleResultUrl').style.display = 'inline-block';
+                    } else {
+                        document.getElementById('singleResultUrl').style.display = 'none';
+                    }
+                }
+
+                //Apply filter in case of a URL
+                function applyInitialFilter() {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const initialFilter = urlParams.get('Field1');
+                    if (initialFilter) {
+                        document.getElementById('filterInput').value = initialFilter;
+                        filterTable(initialFilter);
+                    }
+                }
+                //Find what stations are empty
+                function findEmptyStations(assigned, all) {
+                    let emptyStations = [];
+                    all.map((station) => { if (!assigned.includes(station)) { emptyStations.push(station) } });
+                    const ev = new CustomEvent('freestationsChanged', { bubbles: false, detail: { emptyStations: emptyStations } });
+                    document.dispatchEvent(ev);
+                }
+
+                document.addEventListener('originalDataChanged', (e) => {
+                    ne = originalData.filter((o) => { return !freeStations.includes(o[1]) });
+                    originalData = ne;
+                });
+
+                document.addEventListener('freestationsChanged', (e) => {
+                    freeStations = e.detail.emptyStations;
+                    document.querySelector('#freeStationInfo').innerHTML = 'There are these free stations: ' + divFromArray(freeStations).outerHTML;
+                    const ev = new CustomEvent('originalDataChanged', { bubbles: false, detail: { when: Date().toString() } });
+                    document.dispatchEvent(ev);
+                })
+
+                function divFromArray(data, id = "newDiv") {
+                    let s = document.createElement("div");
+                    s.setAttribute("id", id);
+                    let inner = '';
+                    data.map((d) => {
+                        c = document.createElement("div");
+                        c.setAttribute("id", 'free-' + d);
+                        c.setAttribute("class", 'free');
+                        c.innerHTML = d;
+                        s.appendChild(c);
+                    });
+                    return s
+                }
+
+                //Event Listener to initiate Table decoration
+                document.addEventListener('DOMContentLoaded', () => {
+                    decorateTable(document.querySelector('#dataTableF1'))
+                    //Add a button to open or close the auto assign feature
+                    document.getElementById('autoAssign').addEventListener('click', () => {
+                        if (document.getElementById('autoAssign').innerText == 'Close AutoAssign') {
+                            putJsonState("https://jsonblob.com/api/Jsonblob/1250688408748941312", {
+                                "status": "Closed",
+                                "lastChanged": new Date().toString()
+                            }).then(() => {
+                                document.getElementById('autoAssign').innerText = 'Open AutoAssign';
+                            }).catch((error) => {
+                                console.log(error);
+                            });
+                        }
+                        if (document.getElementById('autoAssign').innerText == 'Open AutoAssign') {
+                            putJsonState("https://jsonblob.com/api/Jsonblob/1250688408748941312", {
+                                "status": "Open",
+                                "lastChanged": new Date().toString()
+                            }).then(() => {
+                                document.getElementById('autoAssign').innerText = 'Close AutoAssign';
+                            }).catch((error) => {
+                                console.log(error);
+                            });
+                        }
+
+                    });
+                });
+                //Table Decoration logic - adding utility
+                function decorateTable(table) {
+                    table.addEventListener('click', (event) => {
+                        const cell = event.target;
+                        if (cell.classList.contains('movable') && !cell.querySelector('button')) {
+                            const originalText = cell.innerText;
+                            const input = document.createElement('input');
+                            input.type = 'button';
+                            input.value = originalText;
+                            input.style.width = `${cell.offsetWidth}px`;
+
+                            cell.innerHTML = '';
+                            cell.appendChild(input);
+
+                            input.addEventListener('click', (e) => {
+                                assignToLabourShare(e.target.value);
+                                cell.parentNode.remove()
+                                //Todo Trigger a changedEvent
+                                const ev = new CustomEvent('originalDataChanged', { bubbles: false, detail: { when: Date().toString() } });
+                                document.dispatchEvent(ev);
+                            })
+                        }
+                        if (cell.classList.contains('editable') && !cell.querySelector('input')) {
+                            const originalText = cell.innerText;
+                            const input = document.createElement('input');
+                            input.type = 'text';
+                            input.value = originalText;
+                            input.style.width = `${cell.offsetWidth}px`;
+
+                            cell.innerHTML = '';
+                            cell.appendChild(input);
+                            input.focus();
+                            //Suggester System
+                            input.addEventListener("keyup", (e) => {
+
+                                if (e.target.value.length >= 2) {
+                                    input.parentElement.appendChild(createSuggestion(["---1", "---2"], e.target, input.parentElement));
+                                }
+                            });
+
+                            input.addEventListener('keydown', (event) => {
+                                if (event.key === 'Escape') {
+                                    cell.innerHTML = originalText;
+                                }
+                                if (event.key === 'Enter') {
+                                    if (input.value == '') {
+                                        //addToUnassigned
+                                        document.querySelector('#unassigned').appendChild(cell.parentNode)
+                                        //Recalculate Free Stations.
+                                        let inuse = [];
+                                        for (let i = 1; i < table.rows.length; i++) {
+                                            inuse.push(+table.rows[i].cells[1].innerHTML);
+                                        }
+                                        findEmptyStations(inuse, stations);
+                                    }
+                                    cell.innerHTML = input.value;
+                                }
+                            });
+                            input.addEventListener('blur', () => {
+                                //cell.innerHTML = originalText;
+                            });
+                        }
+                    });
+                }
+
+                document.getElementById('updateStaff').addEventListener('click', () => {
+                    this.innerText = "Updating...";
+                    updateNames();
+                });
+
+                function countStations() {
+                    return stations.length;
+                }
+
+                function countStaff() {
+                    return availableStaff.length;
+                }
+
+                function createCountElement(name, count) {
+                    c = document.createElement("div");
+                    c.setAttribute("id", name.replace(/\s+/g, ''))
+                    c.innerHTML = name + " Count: " + count();
+                    document.getElementById("status").appendChild(c)
+                }
+
+                function createPreCountedElement(name, precount) {
+                    c = document.createElement("div");
+                    id = name.replace(/\s+/g, '');
+                    c.setAttribute("id", id);
+                    c.innerHTML = name + ": " + precount;
+                    document.getElementById("status").appendChild(c)
+                }
+
+                //This needs more work, currently updates UI not state.
+                function assignToLabourShare(userid) {
+                    labourShare.push([userid, Date().toString()]);
+                    //We now should fire an event saying labourShare has changed.
+                    const ev = new CustomEvent('newLabourShare', { bubbles: false, detail: { assignee: [userid, Date().toString()] } });
+                    document.querySelector('#labourShareTable').dispatchEvent(ev);
+                }
+                document.querySelector('#labourShareTable').addEventListener('newLabourShare', (e) => {
+                    addRowToLS(e.detail.assignee);
+                }, true)
+
+                //Add a row to the Labour Share
+                function addRowToLS(fields) {
+                    console.log(fields);
+                    const table = document.getElementById('labourShareTable');
+                    if (!table.getElementsByTagName('tbody')[0]) {
+                        addTableHeaders(table, ['amazonid', 'time']);
+                    }
+                    const tableBody = table.getElementsByTagName('tbody')[0]
+                    const row = document.createElement('tr');
+                    for (let i = 0; i <= fields.length; i++) {
+                        const cell = document.createElement('td');
+                        cell.textContent = fields[i] ? fields[i] : '';  // Handle missing fields
+                        cell.setAttribute('class', 'editable')
+                        row.appendChild(cell);
+                    }
+                    tableBody.appendChild(row);
+                }
+                function dec(table) {
+
+                    for (i = 1; i < table.rows.length; i++) {
+                        td = document.createElement("td");
+                        td.setAttribute("data-func", "dec");
+                        td.appendChild(createLSButton());
+                        table.rows[i].appendChild(td);
+                    }
+                }
+
+                function createLSButton() {
+                    b = document.createElement("button");
+                    b.setAttribute("value", "Labour Share");
+                    b.innerText = "Labour Share";
+                    b.addEventListener("click", (e) => {
+                        row = e.target.closest("tr");
+                        rowData = row.getAttribute("data-row");
+                        console.log(rowData);
+                        rowData = JSON.parse(rowData);
+                        inp = document.createElement("input");
+                        inp.value = rowData.S1;
+                        e.target.parentNode.appendChild(inp);
+                    });
+                    return b;
+                }
+
+                //Add a row to the unassigned table
+                function addRowToUA(fields) {
+                    const table = document.getElementById('unassigned')
+                    if (!table.getElementsByTagName('tbody')[0]) {
+                        addTableHeaders(table, ['amazonid', 'new station']);
+                    }
+                    tableBody = table.getElementsByTagName('tbody')[0]
+                    const row = document.createElement('tr');
+                    for (let i = 0; i <= fields[0].length; i++) {
+                        const cell = document.createElement('td');
+                        cell.textContent = fields[i] ? fields[i] : '';  // Handle missing fields
+                        cell.setAttribute('class', 'editable')
+                        row.appendChild(cell);
+                    }
+                    tableBody.appendChild(row);
+                    decorateTable(table);
+                }
+
+                function addRowToSD(fields) {
+                    const table = document.getElementById('standDown')
+                    if (!table.getElementsByTagName('tbody')[0]) {
+                        addTableHeaders(table, ['amazonid', 'time']);
+                    }
+                    tableBody = table.getElementsByTagName('tbody')[0]
+                    for (let i = 0; i < fields.length; i++) {
+                        const cell = document.createElement('td');
+                        cell.textContent = fields[i] ? fields[i] : '';  // Handle missing fields
+                        cell.setAttribute('class', 'editable')
+                        row.appendChild(cell);
+                    }
+                    tableBody.appendChild(row);
+                }
+                //Refactored making table headers.
+                function addTableHeaders(table, headers) {
+                    if (!table.getElementsByTagName('tbody')[0]) {
+                        tableBody = table.appendChild(document.createElement('tbody'));
+
+                        const row = document.createElement('tr');
+                        for (let i = 0; i < headers.length; i++) {
+                            th1 = document.createElement('th');
+                            th1.innerText = headers[i];
+                            th1.setAttribute('id', headers[i]);
+                            row.appendChild(th1);
+                        }
+                        tableBody.appendChild(row);
+                    }
+                }
+
+                function updateNames() {
+                    availableStaff = document.getElementById("namesList").value.split(",");
+                    //http://jsonblob.com/1246532986249011200 is our names list persistence
+                    putJsonState("https://jsonblob.com/api/jsonBlob/1246532986249011200", { "names": availableStaff }).then(() => {
+                        document.getElementById("updateStaff").innerText = "Updated";
+                        const ev = new CustomEvent('originalDataChanged', { bubbles: false, detail: { when: Date().toString() } });
+                        document.dispatchEvent(ev);
+                        s = setTimeout(() => {
+                            document.getElementById("updateStaff").innerText = "Update Staff";
+                            clearTimeout(s);
+                        }, 2000);
+                        //document.getElementById("status").innerHTML = "Names Updated";
+                    }).catch((error) => {
+                        console.log(error);
+                    });
+                }
+
+
+
+
+                function createSuggestion(arr, input, target) {
+                    if (!document.getElementById("suggestion")) {
+                        u = document.createElement("ul");
+                        u.setAttribute("id", "suggestion");
+                    } else {
+                        u = document.getElementById("suggestion");
+                        u.innerHTML = "";
+                    }
+                    ar = arr.filter((item) => {
+                        return item.startsWith(input.value);
+                    });
+                    ar.forEach((i) => {
+                        li = document.createElement("li");
+                        li.textContent = i;
+                        li.addEventListener("click", () => {
+                            input.value = i;
+                            u.remove();
+                        });
+                        u.appendChild(li);
+                    });
+                    return u;
+                }
+
+                function fs() {
+                    document.getElementById("test").addEventListener("keyup", (e) => {
+                        if (e.target.value.length >= 1) {
+                            document.body.appendChild(
+                                createSuggestion(floors, document.getElementById("test"))
+                            );
+                        }
+                    });
+                    document.getElementById("test").addEventListener("blur", (e) => {
+                        if (e.target.value.length < 1) {
+                            document.getElementById("suggestion").remove();
+                        }
+                    });
+                }
+
+                window.onload = applyInitialFilter;
     </script>
 </body>

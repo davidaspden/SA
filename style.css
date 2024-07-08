@@ -48,7 +48,7 @@ button:hover {
 
 #status {
   content: 'Status Will appear here';
-  height: 1.5vh;
+  height: 4vh;
   background-color: rgb(103, 100, 100);
   position: absolute;
   bottom: 0px;
@@ -59,7 +59,7 @@ button:hover {
   display: flex;
   flex-direction: row;
   padding: 3px;
-  font-size: calc(1.5vh -10px);
+  font-size: 2vh;
 }
 
 #status div {
