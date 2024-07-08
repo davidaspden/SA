@@ -2,7 +2,7 @@
 //with a dynamic search bar that filters the table based on the search query
 //The search bar should be able to search for both amazonid and allocated station
 //We should also be able to filter by the 1st and second digit of the station id
-//We should be able to see all 174 stations or just assigned stations with a check box toggle
+//***We should be able to see all 174 stations or just assigned stations with a check box toggle
 //the column headers should be clickable to sort the table by that column
 //All stations list: https://jsonblob.com/1250140915040641024-->
 <!DOCTYPE html lang="en">
@@ -56,6 +56,7 @@
             color: var(--c5);
             background-image: linear-gradient(to right, var(--c5rgba10) 1px, transparent 1px), linear-gradient(to bottom, var(--c5rgba10) 1px, transparent 1px);
             background-size: 4vh 4vh;
+            line-height: 1.5;
         }
 
         h1 {
@@ -67,23 +68,36 @@
             margin-top: 4vh;
         }
 
-        table:nth-child(even) {
+        tr:nth-child(even) {
             background-color: var(--c2);
         }
 
-        table:nth-child(odd) {
+        tr:nth-child(odd) {
             background-color: var(--c3);
             color: var(--c5);
         }
 
+        #stationStaffing {
+            width: 80vw;
+            box-sizing: border-box;
+            border-collapse: collapse;
+            border-spacing: 0;
+            border: 2px solid var(--c5);
+            margin-top: 4vh;
+            align-self: center;
+        }
+
+        #stationStaffing th {
+            cursor: pointer;
+            border-bottom: 3px solid var(--c2);
+        }
 
         #forgotBadge {
             position: absolute;
             box-sizing: border-box;
             bottom: 0px;
-            margin-bottom: -90px;
-            background-image: linear-gradient(to bottom, var(--c2) 3px, var(--c1));
-            padding: 10px;
+            margin-bottom: -114px;
+            background-image: linear-gradient(to bottom, var(--c2) 60px, var(--c1));
             border-top: 2px solid #000;
             width: 100vw;
             box-shadow: -9px 5px 5px var(--c1);
@@ -91,22 +105,26 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-            transition: all cubic-bezier(0.6, -0.28, 0.735, 0.045) 1.5s;
+            transition: margin cubic-bezier(0.6, -0.28, 0.735, 0.045) 0.5s;
         }
 
-        #forgotBadge h3 {
+        #forgotBadge #badgeClick {
             cursor: pointer;
             box-sizing: border-box;
             height: 30px;
-            width: 100vw;
+            margin-top: -141px;
             text-align: center;
+            display: inline-block;
+            background-color: var(--c1);
+            position: absolute;
+            border: 1px solid black;
+            border-bottom: none;
         }
 
         #badgeDisplay {
             width: 100vw;
             box-sizing: border-box;
             height: 100px;
-            display: none;
 
         }
 
@@ -117,8 +135,8 @@
             justify-content: flex-start;
             width: 100vw;
             height: 100vh;
-            flex-wrap: wrap;
             align-content: center;
+            overflow: scroll;
         }
 
         :root {
@@ -187,15 +205,13 @@
             margin-bottom: 8px;
         }
 
-        .textbox {
+        .textInput {
             -moz-appearance: none;
             -webkit-appearance: none;
             appearance: none;
             outline: none;
-
             font: inherit;
             /* From .input-group */
-
             border: 1px solid transparent;
             padding-top: calc(0.5em - 1px);
             padding-bottom: calc(0.5em - 1px);
@@ -205,9 +221,8 @@
             /* Your style */
         }
 
-        .textbox::placeholder {
+        .textInput::placeholder {
             opacity: 0.35;
-            /* Your style */
         }
 
         /* ICONS Base Syle
@@ -221,11 +236,11 @@
         .icon {
             color: inherit;
             /* From input-group */
-            opacity: 0.35;
+            opacity: 0.68;
             /* Same as placeholder */
 
-            width: 1em;
-            height: 1em;
+            width: 2.5em;
+            height: 2.5em;
 
             display: inline-flex;
             align-items: center;
@@ -258,20 +273,10 @@
             justify-content: space-between;
         }
 
-        
-
-        
-
         /* When icon as prefix */
         .icon:not(.bg)~.textbox {
             padding-left: 0;
             /* Removes left padding */
-        }
-
-        /* When icon as suffix */
-        .textbox~.icon:not(.bg) {
-            margin-left: calc(1px - 0.5em);
-            /* Removes right padding */
         }
 
         /* INPUT GROUP FOCUS 
@@ -305,6 +310,16 @@
         .input-group .textbox:focus+.outline::after {
             box-shadow: 0px 0px 2px 4px rgba(0, 149, 255, 1);
         }
+
+        #searchFilter {
+            padding: 3px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-evenly;
+            align-items: center;
+            margin-bottom: 8px;
+        }
     </style>
 </head>
 
@@ -323,36 +338,38 @@
     <div id="container">
         <h1>Mobile Station Finder</h1>
         <div id="searchFilter">
-            <label for="search">Search:</label>
             <div class="input-group">
                 <span class="icon bg">
                     <i class="fas fa-filter"></i>
                 </span>
-                <input type="text" id="search" name="search" class="textInput" placeholder="enter amazonid">
+                <input type="text" id="search" name="search" class="textInput" placeholder="enter station/amazonid">
                 <span class="outline"></span>
             </div>
-            <label for="showAll">Show All:</label>
-            <input type="checkbox" id="showAll" name="showAll">
+            <div>
+                <label for="showAll">Show All:</label>
+                <input type="checkbox" id="showAll" name="showAll" checked="true">
+            </div>
         </div>
     </div>
-
     <div id="forgotBadge">
-        <h3>Click For badge</h3>
+        <div id="badgeClick">Click For badge</div>
         <div id="badgeDisplay"></div>
     </div>
     <script type="text/javascript">
 
 
         document.addEventListener("DOMContentLoaded", (event) => {
-            u = document.getElementById('utility');
-            height = u.getBoundingClientRect().height;
-            document.getElementById('utility').style.setProperty('--calcHeight', height + 'px')
-            console.log("DOM fully loaded and parsed");
+            const u = document.getElementById('utility');
+            const height = u.getBoundingClientRect().height;
+            u.style.setProperty('--calcHeight', height + 'px');
 
+            u.style.setProperty('margin-top', -height + 'px');
 
+            getFullStationList();
+        });
 
+        function getFullStationList() {
             let fullStationList = "https://jsonblob.com/api/jsonBlob/1250140915040641024";
-
             fetch(fullStationList, {
                 headers: {
                     accept: "application/json",
@@ -363,13 +380,60 @@
             }).then(function (response) {
                 return response.json();
             }).then(function (json) {
-                //document.getElementById('search').value = json.floors;
-                console.log(json);
-                createTableFromArray(["AmazonID", "Station"], 1, json);
+                createTableFromArray(["AmazonID", "Station"], "stationStaffing", json.floors);
             }).catch(function (error) {
                 console.log(error);
             });
+        }
+
+        function getFilteredStationList() {
+            let fullStationList = "https://jsonblob.com/api/jsonBlob/1250140915040641024";
+            fetch(fullStationList, {
+                headers: {
+                    accept: "application/json",
+                    "accept-language": "en-GB",
+                    "cache-control": "no-cache"
+                },
+                method: "GET"
+            }).then(function (response) {
+                return response.json();
+            }).then(function (json) {
+                floors = json.floors.filter((floor) => {
+                    return floor.toString().startsWith(document.getElementById('search').value);
+                });
+                console.log(floors);
+                createTableFromArray(["AmazonID", "Station"], "stationStaffing", floors);
+            }).catch(function (error) {
+                console.log(error);
+            });
+        }
+
+        document.getElementById("search").addEventListener("keyup", (e) => {
+            if (document.getElementById('showAll').checked == true) {
+                if (document.getElementById("search").value != "") {
+                    document.getElementById('showAll').checked = false;
+                    console.log('searching: ' + e.target.value);
+                    getFilteredStationList();
+                }
+                else {
+
+                    document.getElementById('showAll').checked = true;
+                    getFullStationList();
+                }
+            }
+            else {
+                if (document.getElementById("search").value != "") {
+                    document.getElementById('showAll').checked = false;
+                    console.log('searching: ' + e.target.value);
+                    getFilteredStationList();
+                }
+                else {
+                    document.getElementById('showAll').checked = true;
+                    getFullStationList();
+                }
+            }
         });
+
         document.getElementById("click").addEventListener("click", (e) => {
             e.stopPropagation();
             const u = document.getElementById("utility");
@@ -385,8 +449,20 @@
             u.style.setProperty('gap', "20px");
         });
 
+        document.getElementById("showAll").addEventListener("change", (e) => {
+            if (e.target.checked) {
+                if (document.getElementById('stationStaffing')) {
+                    document.getElementById('stationStaffing').remove();
+                    getFullStationList();
+                    document.getElementById('search').value = "";
+                }
+                else {
+                    getFilteredStationList();
+                }
+            };
+        });
+
         function createTableFromArray(headers, id, da) {
-            console.log(da)
             let table = document.createElement('table');
             let thead = document.createElement('thead');
             let tbody = document.createElement('tbody');
@@ -401,8 +477,7 @@
             })
             thead.appendChild(tr);
             table.appendChild(thead);
-            da.floors.forEach(row => {
-                console.log(row)
+            da.forEach(row => {
                 let tr = document.createElement('tr');
                 headers.forEach(header => {
                     let td = document.createElement('td');
@@ -410,14 +485,26 @@
                     tr.appendChild(td);
                 })
                 tbody.appendChild(tr);
-               
-            }) 
+
+            })
             table.appendChild(tbody);
             table.id = id;
+            if (document.getElementById(id)) {
+                document.getElementById(id).remove();
+            }
             document.getElementById('container').appendChild(table);
         }
-        document.getElementById('forgotBadge').addEventListener('click', function () {
+        document.querySelector('#forgotBadge #badgeClick').addEventListener('click', function () {
+            if(document.getElementById('forgotBadge').style.marginBottom == '-114px'){
+            document.getElementById('forgotBadge').style.marginBottom = '0px';
             document.getElementById('badgeDisplay').style.bottom = '0px';
+            document.getElementById('badgeDisplay').style.height = '30px';
+        }
+            else{
+                document.getElementById('forgotBadge').style.marginBottom = '-114px';
+                document.getElementById('badgeDisplay').style.bottom = '-114px';
+                document.getElementById('badgeDisplay').style.height = '0px';
+            }
         })
         var qrcode = new QRCode(document.getElementById("qrcode"), {
             width: 100,

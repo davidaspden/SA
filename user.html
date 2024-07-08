@@ -61,6 +61,14 @@
 
     <div id="status-bar">status: </div>
     <script type="text/javascript">
+const worker = new Worker('webworker.js');
+// Listen for messages from the web worker
+worker.onmessage = function(event) {
+    console.log('Received message from web worker:', event.data);
+};
+
+// Send a message to the web worker
+worker.postMessage('Get Status');
         document.addEventListener("keydown", function (event) {
             if (event.key === "Escape") {
                 var modal = document.getElementById("myModal");
@@ -95,7 +103,6 @@
                         })
                         .then(function (json) {
                             var values = Object.values(json.userBadges);
-
                             if (!values.includes(input)) {
                                 var modal = document.getElementById("myModal");
                                 modal.style.display = "block";

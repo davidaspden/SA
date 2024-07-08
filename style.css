@@ -1,117 +1,117 @@
-
-
 * {
-    margin: 0px;
-    padding: 0px;
-    font-family: 'Amazon Ember Display', sans-serif;
-    /*Colour Palette*/
-    --c1: #ff9900;
-    --c2: #146eb4;
-    --c3: #000000;
-    --c4: #232f3e;
-    --c5: #f2f2f2;
+  margin: 0px;
+  padding: 0px;
+  font-family: 'Amazon Ember Display', sans-serif;
+  /*Colour Palette*/
+  --c1: #ff9900;
+  --c2: #146eb4;
+  --c3: #000000;
+  --c4: #232f3e;
+  --c5: #f2f2f2;
 
-    --c1rgb: rgba(255, 153, 0);
-    --c2rgb: rgba(20, 110, 180);
-    --c3rgb: rgba(0, 0, 0);
-    --c4rgb: rgba(35, 47, 62);
-    --c5rgb: rgb(242, 242, 242);
-    --c5rgba10: rgba(242, 242, 242, 0.1);
+  --c1rgb: rgba(255, 153, 0);
+  --c2rgb: rgba(20, 110, 180);
+  --c3rgb: rgba(0, 0, 0);
+  --c4rgb: rgba(35, 47, 62);
+  --c5rgb: rgb(242, 242, 242);
+  --c5rgba10: rgba(242, 242, 242, 0.1);
 }
 
 body {
   background-color: #232f3e;
-  background-image: linear-gradient(to right, var(--c5rgba10) 1px , transparent 1px)
-  , linear-gradient(to bottom, var(--c5rgba10) 1px , transparent 1px);
+  background-image: linear-gradient(to right, var(--c5rgba10) 1px, transparent 1px), linear-gradient(to bottom, var(--c5rgba10) 1px, transparent 1px);
   background-size: 8vh 8vh;
-
+  color: var(--c5);
 }
 
 pre {
   display: block;
-	background: #f1f1f1;
-	padding: 1.33em;
-	border-radius: 0.33em;
+  background: #f1f1f1;
+  padding: 1.33em;
+  border-radius: 0.33em;
 }
 
 button {
-    background-color: #4CAF50;
-    color: black;
-    padding: 14px 20px;
-    margin: 8px 0;
-    border: none;
-    cursor: pointer;
-    width: 100%;
+  background-color: #4CAF50;
+  color: black;
+  padding: 14px 20px;
+  margin: 8px 0;
+  border: none;
+  cursor: pointer;
+  width: 100%;
 
 }
 
 button:hover {
-    opacity: 0.8;
+  opacity: 0.8;
 }
 
 #status {
-    content: 'Status Will appear here';
-    height: 30px;
-    background-color: rgb(103, 100, 100);
-    position: absolute;
-    bottom: 0px;
-    width: 100vw;
-    color:rgb(67, 5, 5);
-    border-top: 4px solid rgb(0, 0, 0);
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: row;
-    padding: 3px;
-    font-size: 8px;
+  content: 'Status Will appear here';
+  height: 1.5vh;
+  background-color: rgb(103, 100, 100);
+  position: absolute;
+  bottom: 0px;
+  width: 100vw;
+  color: rgb(67, 5, 5);
+  border-top: 4px solid rgb(0, 0, 0);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  padding: 3px;
+  font-size: calc(1.5vh -10px);
 }
 
 #status div {
-    border-right: 1px solid brown;
-    padding-right: 4px;
-    padding-left: 4px;
+  border-right: 1px solid brown;
+  padding-right: 4px;
+  padding-left: 4px;
 }
 
 #searchSection {
-    height: 30px;
-    background-color: black;
-    width: 100vw;
-    color: brown;
-    border-bottom: 2px solid brown;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    justify-content: space-between;
-    padding: 3px;
-    gap: 4px;
+  height: 30px;
+  background-color: black;
+  width: 100vw;
+  color: brown;
+  border-bottom: 2px solid brown;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  padding: 3px;
+  gap: 4px;
 
 }
 
 #searchSection #admin {
-    justify-self: right;
-    border: 1px solid brown;
+  justify-self: right;
+  border: 1px solid brown;
 }
 
 #dataTableF1 {
   border-radius: 6px;
   box-shadow: rgba(6, 24, 44, 0.4) 0px 0px 0px 2px, rgba(6, 24, 44, 0.65) 0px 4px 6px -1px, rgba(255, 255, 255, 0.08) 0px 1px 0px inset;
-    margin: 14px;
-    box-sizing: border-box;
-    border: 2px solid #000;
-    border-collapse: collapse;
-    #span1 {
-        writing-mode: tb-rl;
-        transform: rotate(-180deg);
-        background-color: green;
-        color: white;
-        width: 1rem;
-    }
+  margin: 14px;
+  box-sizing: border-box;
+  border: 2px solid #000;
+  border-collapse: collapse;
+
+  #span1 {
+    writing-mode: tb-rl;
+    transform: rotate(-180deg);
+    background-color: green;
+    color: white;
+    width: 1rem;
+  }
 }
-#dataTableF1Container{
-  position:relative;
+
+#dataTableF1Container {
+  position: relative;
   display: block;
   height: auto;
 }
+
 #dataTableF1Container:before {
   content: 'Station Data';
   display: inline-block;
@@ -130,179 +130,224 @@ button:hover {
 #dataTableF1 tr th {
   height: 40px;
 }
-#dataTableF1 tr:nth-child(even){
-    background-color: rgb(13, 32, 116);
-    color: white;
+
+#dataTableF1 tr:nth-child(even) {
+  background-color: rgb(13, 32, 116);
+  color: white;
 }
+
 #jsonOutput {
   position: relative;
-    border: 2px solid green;
-    padding: 12px;
-    margin: 4px;
-    margin-top: 20px;
-    font-size: 10px;
-    overflow-x:scroll;
-    overflow-y: hidden;
-    &:before {
-        content: 'Raw Data';
-        position: absolute;
-        display: block;
-        border: 1px solid red;
-        font-weight: bold;
-        color: #fff;
-        background-color: red;;
-        top: -2px;
-        margin-bottom: 10px;
-        z-index: 2;
-        overflow:visible;
-    }
-    
+  border: 2px solid green;
+  padding: 12px;
+  margin: 4px;
+  margin-top: 20px;
+  font-size: 10px;
+  overflow-x: scroll;
+  overflow-y: hidden;
+
+  &:before {
+    content: 'Raw Data';
+    position: absolute;
+    display: block;
+    border: 1px solid red;
+    font-weight: bold;
+    color: #fff;
+    background-color: red;
+    ;
+    top: -2px;
+    margin-bottom: 10px;
+    z-index: 2;
+    overflow: visible;
+  }
+
 }
+
 #title {
-    display: flex;
-    width: 100vw;
-    height: 80px;
-    align-content: space-between;
-    flex-wrap: nowrap;
-    justify-content: space-between;
-    padding: 4px;
-    padding-top: 10px;
-    flex-direction: row;
-    align-items: flex-start;
-    
+  display: flex;
+  width: 100vw;
+  height: 80px;
+  align-content: space-between;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  padding: 4px;
+  padding-top: 10px;
+  flex-direction: row;
+  align-items: flex-start;
+
 }
 
 #title h1 {
-    align-self: baseline;
-    display: block;
-    border-bottom: 6px double blue;
+  font-size: 3.5rem;
+  color: white;
+  align-self: baseline;
+  display: block;
+  border-bottom: 6px double blue;
 }
+
 #title #logoContainer {
-    flex-direction: row;
-    align-self: flex-start;
-    padding-right: 20px;
+  flex-direction: row;
+  align-self: flex-start;
+  padding-right: 20px;
 }
 
 #logoContainer {
-    width: 30vw;
-    display: flex;
-    flex-direction: row;
-    gap: 2px;
-    height: 20px;
+  width: 30vw;
+  display: flex;
+  flex-direction: row;
+  gap: 2px;
+  height: 20px;
+}
+
+.outer {
+  display: block;
+  box-sizing: border-box;
+  border: 4px solid #000;
+  padding: 25px;
+  overflow: hidden;
+  width: 110px;
+  aspect-ratio: 1/1;
+}
+
+.inner {
+  font-size: 60px;
+  padding: 0px;
+  animation-name: assign;
+  animation-iteration-count: infinite;
+  margin-left: 0px;
+}
+
+.first {
+  animation-duration: 1s
+}
+
+.second {
+  animation-duration: 2s
+}
+
+.third {
+  animation-duration: 2.5s
+}
+
+@keyframes assign {
+  0% {
+    margin-left: -300px;
+    opacity: 0%;
   }
-  .outer {
-    display: block;
-    box-sizing: border-box;
-    border: 4px solid #000;
-    padding: 25px;
-    overflow: hidden;
-    width: 110px;
-    aspect-ratio: 1/1;
-  }
-  .inner {
-    font-size: 60px;
-    padding: 0px;
-    animation-name: assign;
-    animation-iteration-count: infinite;
+
+  60% {
     margin-left: 0px;
-  }
-  
-  .first {
-    animation-duration: 1s
-  }
-  .second{
-    animation-duration: 2s
-  }
-  .third {
-    animation-duration: 2.5s
-  }
-  
-  @keyframes assign {
-    0% {
-     margin-left: -300px;
-      opacity: 0%;
-    }
-    60% {
-      margin-left: 0px;
-      opacity: 100%;
-    }
-    100%{
-      opacity: 0%;
-    }
+    opacity: 100%;
   }
 
-  #singleResultUrl {
-    border: 2px solid green;
-    padding: 12x;
-    position: relative;
-    margin: 4px;
-    margin-top: 30px;
-    font-family: "Amazon Ember";
-    font-weight: 200;
-    &:before {
-      content: 'Your personal station link';
-      font-family: "Amazon Ember Display";
-      position: absolute;
-      top: -15px;
-      background-color: blueviolet;
-      color: black;
-      font-weight: 400;
-    }
+  100% {
+    opacity: 0%;
   }
+}
 
-  #main {
-    width: 70%;
-    box-sizing: border-box;
-    border-right: 3px solid brown;
-    margin-right: 4px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-content: flex-start;
-    flex-wrap: nowrap;
-    align-items: flex-start;
-    padding-top: 3vh;
-    
-  }
+#singleResultUrl {
+  border: 2px solid green;
+  padding: 12x;
+  position: relative;
+  margin: 4px;
+  margin-top: 30px;
+  font-family: "Amazon Ember";
+  font-weight: 200;
 
-  #LastSaved{
-    align-self: flex-end;
+  &:before {
+    content: 'Your personal station link';
+    font-family: "Amazon Ember Display";
+    position: absolute;
+    top: -15px;
+    background-color: blueviolet;
+    color: black;
+    font-weight: 400;
   }
-  #container {
-    display: flex;
-    flex-direction: column;
-    width: 100vw;
-    flex-wrap: nowrap;
-  }
+}
 
-  #dataSection {
-    width: 100vw;
-    display: flex;
-    flex-direction: row;
-    height: auto;
-  }
+#main {
+  width: 70%;
+  box-sizing: border-box;
+  border-right: 3px solid brown;
+  margin-right: 4px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-content: flex-start;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  padding-top: 3vh;
 
-  #otherRoles {
-    width: 25%;
-    display: flex;
-    flex-direction: column;
-    flex-wrap: nowrap;
-    align-content: flex-start;
-    justify-content: flex-start;
-  }
-  
-  #otherRoles h2 {
-    border-bottom: 1px solid brown;
-    user-select: none;
-    margin-bottom: 3px;
-    font-size: 1em;
-  }
+}
 
-  #otherRoles table {
-    box-sizing: border-box;
-    border: 1px solid #979191;
-    font-size: 10px;
-    border-collapse: collapse;
-    box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;
-  }
+#LastSaved {
+  align-self: flex-end;
+}
+
+#container {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  flex-wrap: nowrap;
+}
+
+#dataSection {
+  width: 100vw;
+  display: flex;
+  flex-direction: row;
+  height: auto;
+}
+
+#otherRoles {
+  width: 25%;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-content: flex-start;
+  justify-content: flex-start;
+}
+
+#otherRoles h2 {
+  border-bottom: 1px solid brown;
+  user-select: none;
+  margin-bottom: 3px;
+  font-size: 1em;
+}
+
+#otherRoles table {
+  box-sizing: border-box;
+  border: 1px solid #979191;
+  font-size: 10px;
+  border-collapse: collapse;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;
+}
+
+.free {
+  background-color: var(--c2);
+  border: 1px solid var(--c1);
+  box-sizing: border-box;
+  color: var(--c5);
+  padding: 4px;
+  display: inline-block;
+
+}
+
+ul {
+  border: 1px solid blueviolet;
+}
+
+input {
+  box-sizing: border-box;
+}
+
+#suggestion {
+  box-sizing: border-box;
+  width: 100px;
+}
+
+#suggestion li {
+  border-bottom: 1px solid blue;
+  padding: 2px;
+  background-color: lightblue;
+}

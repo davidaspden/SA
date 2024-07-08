@@ -396,10 +396,24 @@
 
         document.addEventListener('freestationsChanged', (e) => {
             freeStations = e.detail.emptyStations;
-            document.querySelector('#freeStationInfo').innerHTML = 'There are these free stations: ' + freeStations.toString();
+            document.querySelector('#freeStationInfo').innerHTML = 'There are these free stations: ' + divFromArray(freeStations).outerHTML;
             const ev = new CustomEvent('originalDataChanged', { bubbles: false, detail: { when: Date().toString() } });
             document.dispatchEvent(ev);
         })
+
+        function divFromArray(data, id = "newDiv") {
+            let s = document.createElement("div");
+            s.setAttribute("id", id);
+            let inner = '';
+            data.map((d) => {
+                c = document.createElement("div");
+                c.setAttribute("id", 'free-' + d);
+                c.setAttribute("class", 'free');
+                c.innerHTML = d;
+                s.appendChild(c);
+            });
+            return s
+        }
 
         //Event Listener to initiate Table decoration
         document.addEventListener('DOMContentLoaded', () => {
@@ -461,11 +475,19 @@
                     cell.innerHTML = '';
                     cell.appendChild(input);
                     input.focus();
+                    //Suggester System
+                    input.addEventListener("keyup", (e) => {
+                        
+                        if (e.target.value.length >= 2) {
+                            input.parentElement.appendChild(createSuggestion(["---1", "---2"], e.target, input.parentElement));
+                        }
+                    });
 
                     input.addEventListener('keydown', (event) => {
                         if (event.key === 'Escape') {
                             cell.innerHTML = originalText;
-                        } else if (event.key === 'Enter') {
+                        }
+                        if (event.key === 'Enter') {
                             if (input.value == '') {
                                 //addToUnassigned
                                 document.querySelector('#unassigned').appendChild(cell.parentNode)
@@ -480,7 +502,7 @@
                         }
                     });
                     input.addEventListener('blur', () => {
-                        cell.innerHTML = originalText;
+                        //cell.innerHTML = originalText;
                     });
                 }
             });
@@ -610,6 +632,49 @@
                 tableBody.appendChild(row);
             }
         }
+
+
+
+
+
+        function createSuggestion(arr, input, target) {
+            if (!document.getElementById("suggestion")) {
+                u = document.createElement("ul");
+                u.setAttribute("id", "suggestion");
+            } else {
+                u = document.getElementById("suggestion");
+                u.innerHTML = "";
+            }
+            ar = arr.filter((item) => {
+                return item.startsWith(input.value);
+            });
+            ar.forEach((i) => {
+                li = document.createElement("li");
+                li.textContent = i;
+                li.addEventListener("click", () => {
+                    input.value = i;
+                    u.remove();
+                });
+                u.appendChild(li);
+            });
+            return u;
+        }
+
+        function fs() {
+            document.getElementById("test").addEventListener("keyup", (e) => {
+                if (e.target.value.length >= 1) {
+                    document.body.appendChild(
+                        createSuggestion(floors, document.getElementById("test"))
+                    );
+                }
+            });
+            document.getElementById("test").addEventListener("blur", (e) => {
+                if (e.target.value.length < 1) {
+                    document.getElementById("suggestion").remove();
+                }
+            });
+        }
+
         window.onload = applyInitialFilter;
     </script>
 </body>
